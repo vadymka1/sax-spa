@@ -143,6 +143,30 @@ export const LogoutRequestSchema = z.object({
 });
 export type LogoutRequest = z.infer<typeof LogoutRequestSchema>;
 
+export const PASSWORD_MIN_LENGTH = 6;
+
+export const CreateUserRequestSchema = z.object({
+  email: z.string().email("Invalid email address"),
+  password: z
+    .string()
+    .min(
+      PASSWORD_MIN_LENGTH,
+      `Password must be at least ${PASSWORD_MIN_LENGTH} characters`,
+    ),
+  display_name: z.string().min(1, "Display name is required"),
+  role: AdminRoleSchema,
+  is_active: z.boolean().optional(),
+});
+export type CreateUserRequest = z.infer<typeof CreateUserRequestSchema>;
+
+export const UpdateUserRequestSchema = z.object({
+  email: z.string().email("Invalid email address").optional(),
+  display_name: z.string().min(1, "Display name is required").optional(),
+  role: AdminRoleSchema.optional(),
+  is_active: z.boolean().optional(),
+});
+export type UpdateUserRequest = z.infer<typeof UpdateUserRequestSchema>;
+
 // Admin SpaSection DTO Schemas & Types
 export const AdminSpaSectionDtoSchema = z.object({
   id: z.string().uuid(),

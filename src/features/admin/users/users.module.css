@@ -1,0 +1,472 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.title {
+  font-size: 1.65rem;
+  font-weight: 700;
+  color: var(--color-admin-text);
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.subtitle {
+  font-size: 0.95rem;
+  color: var(--color-admin-text-muted);
+  margin-top: 0.25rem;
+  margin-bottom: 0;
+}
+
+/* Primary Create Button */
+.createButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1.2rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #ffffff;
+  background-color: var(--color-admin-primary);
+  border: 1px solid var(--color-admin-primary);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition:
+    background-color var(--transition-fast),
+    border-color var(--transition-fast);
+}
+
+.createButton:hover:not(:disabled) {
+  background-color: var(--color-admin-primary-hover);
+  border-color: var(--color-admin-primary-hover);
+  color: #ffffff;
+}
+
+.createButton:focus-visible {
+  outline: 3px solid var(--color-admin-primary);
+  outline-offset: 2px;
+}
+
+.createButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.card {
+  background-color: var(--color-admin-surface);
+  border: 1px solid var(--color-admin-border);
+  border-radius: var(--radius-md);
+  padding: 1.5rem;
+  box-shadow: var(--shadow-xs);
+}
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3.5rem 1.5rem;
+  text-align: center;
+  background-color: var(--color-admin-surface);
+  border: 1px dashed var(--color-admin-border-strong);
+  border-radius: var(--radius-md);
+}
+
+.emptyTitle {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--color-admin-text);
+  margin: 0 0 0.5rem 0;
+}
+
+.emptyDescription {
+  font-size: 0.95rem;
+  color: var(--color-admin-text-muted);
+  max-width: 420px;
+  margin: 0 0 1.5rem 0;
+}
+
+.tableWrapper {
+  width: 100%;
+  overflow-x: auto;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-admin-border);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.95rem;
+}
+
+.table th {
+  background-color: var(--color-admin-surface-secondary);
+  color: var(--color-admin-text-muted);
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid var(--color-admin-border);
+}
+
+.table td {
+  padding: 0.95rem 1rem;
+  border-bottom: 1px solid var(--color-admin-border);
+  vertical-align: middle;
+  color: var(--color-admin-text);
+}
+
+.table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.table tbody tr:hover {
+  background-color: var(--color-admin-primary-soft);
+}
+
+.userName {
+  font-weight: 600;
+  color: var(--color-admin-text);
+}
+
+.userEmail {
+  color: var(--color-admin-text-muted);
+  font-size: 0.875rem;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.65rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.badgeActive {
+  background-color: var(--color-admin-success-soft);
+  color: var(--color-admin-success);
+  border: 1px solid rgba(62, 118, 93, 0.3);
+}
+
+.badgeInactive {
+  background-color: var(--color-admin-surface-secondary);
+  color: var(--color-admin-text-muted);
+  border: 1px solid var(--color-admin-border);
+}
+
+.badgeSuperAdmin {
+  background-color: var(--color-admin-primary-soft);
+  color: var(--color-admin-primary);
+  border: 1px solid rgba(63, 100, 136, 0.25);
+}
+
+.badgeAdmin {
+  background-color: var(--color-admin-surface-secondary);
+  color: var(--color-admin-text);
+  border: 1px solid var(--color-admin-border);
+}
+
+.actionGroup {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.editButton {
+  padding: 0.4rem 0.8rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-admin-text);
+  background-color: #ffffff;
+  border: 1px solid var(--color-admin-border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition:
+    background-color var(--transition-fast),
+    border-color var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.editButton:hover:not(:disabled) {
+  background-color: var(--color-admin-primary-soft);
+  border-color: var(--color-admin-primary);
+  color: var(--color-admin-primary);
+}
+
+.editButton:focus-visible {
+  outline: 3px solid var(--color-admin-primary);
+  outline-offset: 2px;
+}
+
+.deactivateButton {
+  padding: 0.4rem 0.8rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-admin-danger);
+  background-color: var(--color-admin-danger-soft);
+  border: 1px solid var(--color-admin-danger-border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition:
+    background-color var(--transition-fast),
+    border-color var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.deactivateButton:hover:not(:disabled) {
+  background-color: var(--color-admin-danger);
+  border-color: var(--color-admin-danger);
+  color: #ffffff;
+}
+
+.deactivateButton:focus-visible {
+  outline: 3px solid var(--color-admin-danger);
+  outline-offset: 2px;
+}
+
+.activateButton {
+  padding: 0.4rem 0.8rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-admin-success);
+  background-color: var(--color-admin-success-soft);
+  border: 1px solid rgba(62, 118, 93, 0.3);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition:
+    background-color var(--transition-fast),
+    border-color var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.activateButton:hover:not(:disabled) {
+  background-color: var(--color-admin-success);
+  border-color: var(--color-admin-success);
+  color: #ffffff;
+}
+
+.activateButton:focus-visible {
+  outline: 3px solid var(--color-admin-success);
+  outline-offset: 2px;
+}
+
+/* Modal / Dialog Styles */
+.modalBackdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(20, 30, 40, 0.45);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  z-index: 1000;
+}
+
+.modal {
+  background-color: var(--color-admin-surface);
+  border: 1px solid var(--color-admin-border);
+  border-radius: var(--radius-lg);
+  width: 100%;
+  max-width: 500px;
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--color-admin-border);
+}
+
+.modalTitle {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--color-admin-text);
+  margin: 0;
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  color: var(--color-admin-text-muted);
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: var(--radius-xs);
+  transition: color var(--transition-fast);
+}
+
+.closeButton:hover {
+  color: var(--color-admin-text);
+}
+
+.modalBody {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.modalFooter {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1.25rem 1.5rem;
+  background-color: var(--color-admin-surface-secondary);
+  border-top: 1px solid var(--color-admin-border);
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-admin-text);
+}
+
+.input,
+.select {
+  width: 100%;
+  padding: 0.65rem 0.85rem;
+  font-size: 0.95rem;
+  color: var(--color-admin-text);
+  background-color: #ffffff;
+  border: 1px solid var(--color-admin-border);
+  border-radius: var(--radius-sm);
+  box-sizing: border-box;
+  transition:
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast);
+}
+
+.input:focus,
+.select:focus {
+  outline: none;
+  border-color: var(--color-admin-primary);
+  box-shadow: 0 0 0 3px rgba(63, 100, 136, 0.2);
+}
+
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--color-admin-text);
+  cursor: pointer;
+}
+
+.checkbox {
+  width: 1.125rem;
+  height: 1.125rem;
+  accent-color: var(--color-admin-primary);
+  cursor: pointer;
+}
+
+.secondaryButton {
+  padding: 0.6rem 1.2rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-admin-text);
+  background-color: #ffffff;
+  border: 1px solid var(--color-admin-border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition:
+    background-color var(--transition-fast),
+    border-color var(--transition-fast);
+}
+
+.secondaryButton:hover:not(:disabled) {
+  background-color: var(--color-admin-surface-secondary);
+  border-color: var(--color-admin-border-strong);
+}
+
+.dangerButton {
+  padding: 0.6rem 1.2rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #ffffff;
+  background-color: var(--color-admin-danger);
+  border: 1px solid var(--color-admin-danger);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition:
+    background-color var(--transition-fast),
+    border-color var(--transition-fast);
+}
+
+.dangerButton:hover:not(:disabled) {
+  background-color: var(--color-admin-danger-hover);
+  border-color: var(--color-admin-danger-hover);
+  color: #ffffff;
+}
+
+.dangerButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.warningNotice {
+  padding: 0.75rem 1rem;
+  background-color: var(--color-admin-danger-soft);
+  border: 1px solid var(--color-admin-danger-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-admin-danger);
+  font-size: 0.875rem;
+  line-height: 1.45;
+}
+
+@media (max-width: 640px) {
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .createButton {
+    width: 100%;
+  }
+
+  .actionGroup {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .modalFooter {
+    flex-direction: column-reverse;
+  }
+
+  .modalFooter button {
+    width: 100%;
+  }
+}
