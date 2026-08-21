@@ -1,0 +1,25 @@
+# Dependencies
+node_modules/
+
+# Production build
+dist/
+
+# Local environment
+.env
+.env.local
+.env.*.local
+
+# Logs and debugs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+coverage/
+
+# OS and IDE files
+.DS_Store
+__MACOSX/
+.vscode/
+.idea/
+*.zip
+*.tsbuildinfo
