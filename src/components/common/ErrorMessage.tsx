@@ -18,25 +18,29 @@ export const ErrorMessage: React.FC<ErrorMessageProps> = ({
     <div
       role="alert"
       style={{
-        padding: "1.5rem",
-        borderRadius: "8px",
-        backgroundColor: "#fff5f5",
-        border: "1px solid #feb2b2",
-        color: "#c53030",
+        padding: "1.25rem 1.5rem",
+        borderRadius: "var(--radius-md)",
+        backgroundColor: "var(--color-admin-danger-soft)",
+        border: "1px solid var(--color-admin-danger-border)",
+        color: "var(--color-admin-danger)",
         margin: "1rem 0",
       }}
     >
-      <h3 style={{ margin: "0 0 0.5rem 0", fontSize: "1.1rem" }}>
+      <h3
+        style={{ margin: "0 0 0.5rem 0", fontSize: "1.05rem", fontWeight: 700 }}
+      >
         {code ? `Error (${code})` : "An Error Occurred"}
       </h3>
-      <p style={{ margin: 0, fontSize: "0.95rem" }}>{message}</p>
+      <p style={{ margin: 0, fontSize: "0.95rem", lineHeight: 1.5 }}>
+        {message}
+      </p>
       {requestId && (
         <p
           style={{
             margin: "0.5rem 0 0 0",
             fontSize: "0.8rem",
-            color: "#742a2a",
-            fontFamily: "monospace",
+            color: "var(--color-admin-danger-hover)",
+            fontFamily: "ui-monospace, SFMono-Regular, monospace",
           }}
         >
           Request ID: {requestId}
@@ -48,13 +52,14 @@ export const ErrorMessage: React.FC<ErrorMessageProps> = ({
           type="button"
           style={{
             marginTop: "1rem",
-            padding: "0.4rem 0.8rem",
-            backgroundColor: "#c53030",
+            padding: "0.45rem 0.9rem",
+            backgroundColor: "var(--color-admin-danger)",
             color: "#ffffff",
-            border: "none",
-            borderRadius: "4px",
+            border: "1px solid var(--color-admin-danger)",
+            borderRadius: "var(--radius-sm)",
             cursor: "pointer",
             fontSize: "0.9rem",
+            fontWeight: 600,
           }}
         >
           Retry

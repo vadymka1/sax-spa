@@ -12,13 +12,29 @@ export const NotFoundPage: React.FC = () => (
       justifyContent: "center",
     }}
   >
-    <h1 style={{ fontSize: "2rem", marginBottom: "1rem" }}>
+    <h1
+      style={{
+        fontSize: "2rem",
+        marginBottom: "1rem",
+        color: "var(--color-admin-text)",
+        fontWeight: 700,
+      }}
+    >
       404 - Page Not Found
     </h1>
-    <p style={{ marginBottom: "1.5rem", color: "#666" }}>
+    <p
+      style={{ marginBottom: "1.5rem", color: "var(--color-admin-text-muted)" }}
+    >
       The requested page does not exist or has been moved.
     </p>
-    <a href="/" style={{ color: "#2563eb", textDecoration: "underline" }}>
+    <a
+      href="/"
+      style={{
+        color: "var(--color-admin-primary)",
+        textDecoration: "underline",
+        fontWeight: 500,
+      }}
+    >
       Return to Public Application
     </a>
   </main>

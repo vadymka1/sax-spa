@@ -26,7 +26,6 @@ export function setRefreshHandler(handler: RefreshHandler | null): void {
 export const apiClient: AxiosInstance = axios.create({
   baseURL: env.apiBaseUrl,
   timeout: 10000,
-  withCredentials: true,
   headers: {
     Accept: "application/json",
   },
