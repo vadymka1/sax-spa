@@ -11,6 +11,8 @@ import { ProtectedAdminRoute } from "../features/auth/ProtectedAdminRoute";
 import { AdminLayout } from "../features/admin/AdminLayout";
 import { ContentBlocksPage } from "../features/admin/content/ContentBlocksPage";
 import { SpaSectionsPage } from "../features/admin/sections/SpaSectionsPage";
+import { UsersPage } from "../features/admin/users/UsersPage";
+import { RequireRole } from "../features/auth/RequireRole";
 import { PublicPage } from "../features/public-page/PublicPage";
 import { LoginPage } from "../features/auth/LoginPage";
 import { NotFoundPage } from "../components/common/NotFoundPage";
@@ -121,6 +123,14 @@ function renderIntegrationRouter(
               {
                 path: "content",
                 element: <ContentBlocksPage />,
+              },
+              {
+                path: "users",
+                element: (
+                  <RequireRole role="super_admin">
+                    <UsersPage />
+                  </RequireRole>
+                ),
               },
               {
                 path: "*",
@@ -829,6 +839,114 @@ describe("FRONTEND F8 — Final Integration & Release Validation", () => {
 
       await screen.findByText('Moved "Block X" to position 2 of 2.');
       expect(postCount).toBe(1);
+    });
+
+    it("executes complete super_admin user management lifecycle: list -> create user -> edit user -> deactivate user", async () => {
+      const mockSuperAdminUser: UserDto = {
+        id: "10000000-0000-4000-8000-000000000001",
+        email: "superadmin@example.test",
+        display_name: "Super Admin",
+        role: "super_admin",
+        is_active: true,
+        created_at: "2026-01-01T00:00:00Z",
+        updated_at: "2026-01-01T00:00:00Z",
+      };
+
+      let userList: UserDto[] = [mockSuperAdminUser];
+
+      server.use(
+        http.get(`${env.apiBaseUrl}/api/v1/admin/users`, () => {
+          return HttpResponse.json({ data: userList });
+        }),
+        http.post(
+          `${env.apiBaseUrl}/api/v1/admin/users`,
+          async ({ request }) => {
+            const body = (await request.json()) as Record<string, unknown>;
+            const created: UserDto = {
+              id: "20000000-0000-4000-8000-000000000002",
+              email: body.email as string,
+              display_name: body.display_name as string,
+              role: body.role as UserDto["role"],
+              is_active: true,
+              created_at: "2026-01-01T00:00:00Z",
+              updated_at: "2026-01-01T00:00:00Z",
+            };
+            userList.push(created);
+            return HttpResponse.json({ data: created });
+          },
+        ),
+        http.patch(
+          `${env.apiBaseUrl}/api/v1/admin/users/:id`,
+          async ({ request, params }) => {
+            const body = (await request.json()) as Record<string, unknown>;
+            userList = userList.map((u) => {
+              if (u.id === params.id) {
+                return {
+                  ...u,
+                  ...(body.display_name !== undefined && {
+                    display_name: body.display_name as string,
+                  }),
+                  ...(body.is_active !== undefined && {
+                    is_active: body.is_active as boolean,
+                  }),
+                };
+              }
+              return u;
+            });
+            const updated = userList.find((u) => u.id === params.id)!;
+            return HttpResponse.json({ data: updated });
+          },
+        ),
+      );
+
+      renderIntegrationRouter(["/admin/users"], mockSuperAdminUser);
+
+      // 1. Render Users Page
+      await screen.findByRole("heading", { name: "Users", level: 1 });
+      await screen.findByText("superadmin@example.test");
+
+      // 2. Create User
+      fireEvent.click(screen.getByRole("button", { name: "+ Create User" }));
+      await screen.findByRole("heading", { name: "Create User", level: 2 });
+
+      fireEvent.change(screen.getByLabelText("Email Address"), {
+        target: { value: "createduser@example.test" },
+      });
+      fireEvent.change(screen.getByLabelText("Display Name"), {
+        target: { value: "Created User" },
+      });
+      fireEvent.change(screen.getByLabelText("Password"), {
+        target: { value: "password123" },
+      });
+
+      fireEvent.click(screen.getByRole("button", { name: "Create User" }));
+
+      await screen.findByText("createduser@example.test");
+
+      // 3. Edit User
+      fireEvent.click(
+        screen.getByRole("button", { name: "Edit Created User" }),
+      );
+      await screen.findByRole("heading", { name: "Edit User", level: 2 });
+
+      fireEvent.change(screen.getByLabelText("Display Name"), {
+        target: { value: "Updated Created User" },
+      });
+
+      fireEvent.click(screen.getByRole("button", { name: "Save Changes" }));
+      await screen.findByText("Updated Created User");
+
+      // 4. Deactivate User
+      fireEvent.click(
+        screen.getByRole("button", { name: "Deactivate Updated Created User" }),
+      );
+      await screen.findByRole("heading", { name: "Deactivate User", level: 2 });
+
+      fireEvent.click(screen.getByRole("button", { name: "Deactivate" }));
+
+      await waitFor(() => {
+        expect(screen.getByText("Inactive")).toBeInTheDocument();
+      });
     });
 
     it("clears memory session state and redirects to login on logout", async () => {

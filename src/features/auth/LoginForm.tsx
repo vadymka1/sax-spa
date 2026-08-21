@@ -1,5 +1,5 @@
 import React, { FormEvent, useState } from "react";
-import { AppApiError } from "../../api/errors";
+import { AppApiError, normalizeApiError } from "../../api/errors";
 import { ErrorMessage } from "../../components/common/ErrorMessage";
 import { useAuth } from "./useAuth";
 import styles from "./auth.module.css";
@@ -28,8 +28,8 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
     try {
       await login({ email, password });
       onSuccess();
-    } catch (err) {
-      setError(err as AppApiError);
+    } catch (err: unknown) {
+      setError(normalizeApiError(err));
     } finally {
       setIsSubmitting(false);
     }

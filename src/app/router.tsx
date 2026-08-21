@@ -7,6 +7,8 @@ import { AdminLayout } from "../features/admin/AdminLayout";
 import { AdminDashboard } from "../features/admin/AdminDashboard";
 import { SpaSectionsPage } from "../features/admin/sections/SpaSectionsPage";
 import { ContentBlocksPage } from "../features/admin/content/ContentBlocksPage";
+import { UsersPage } from "../features/admin/users/UsersPage";
+import { RequireRole } from "../features/auth/RequireRole";
 import { NotFoundPage } from "../components/common/NotFoundPage";
 
 const router = createBrowserRouter([
@@ -36,6 +38,14 @@ const router = createBrowserRouter([
           {
             path: "content",
             element: <ContentBlocksPage />,
+          },
+          {
+            path: "users",
+            element: (
+              <RequireRole role="super_admin">
+                <UsersPage />
+              </RequireRole>
+            ),
           },
           {
             path: "*",
