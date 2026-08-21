@@ -2,34 +2,36 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 80vh;
+  min-height: 85vh;
   padding: 1.5rem;
+  background-color: var(--color-admin-bg);
 }
 
 .loginCard {
   width: 100%;
   max-width: 420px;
-  padding: 2rem;
-  background-color: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: 0.75rem;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  padding: 2.5rem 2rem;
+  background-color: var(--color-admin-surface);
+  border: 1px solid var(--color-admin-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
 }
 
 .loginTitle {
-  font-size: 1.75rem;
+  font-size: 1.65rem;
   font-weight: 700;
-  color: var(--color-primary);
+  color: var(--color-admin-primary);
   margin-top: 0;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.35rem;
   text-align: center;
+  letter-spacing: -0.01em;
 }
 
 .loginSubtitle {
   font-size: 0.95rem;
-  color: var(--color-text-muted);
+  color: var(--color-admin-text-muted);
   margin-top: 0;
-  margin-bottom: 1.75rem;
+  margin-bottom: 2rem;
   text-align: center;
 }
 
@@ -48,54 +50,62 @@
 .label {
   font-size: 0.9rem;
   font-weight: 600;
-  color: var(--color-text);
+  color: var(--color-admin-text);
 }
 
 .input {
   width: 100%;
-  padding: 0.75rem 1rem;
-  font-size: 1rem;
-  color: var(--color-text);
-  background-color: rgba(15, 23, 42, 0.6);
-  border: 1px solid var(--color-border);
-  border-radius: 0.5rem;
+  padding: 0.7rem 0.9rem;
+  font-size: 0.95rem;
+  color: var(--color-admin-text);
+  background-color: #ffffff;
+  border: 1px solid var(--color-admin-border);
+  border-radius: var(--radius-sm);
   box-sizing: border-box;
   transition:
-    border-color 0.2s ease,
-    box-shadow 0.2s ease;
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast);
 }
 
 .input:focus {
   outline: none;
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.25);
+  border-color: var(--color-admin-primary);
+  box-shadow: 0 0 0 3px rgba(63, 100, 136, 0.2);
 }
 
 .submitButton {
   width: 100%;
-  padding: 0.85rem;
-  font-size: 1rem;
+  padding: 0.75rem 1.25rem;
+  font-size: 0.95rem;
   font-weight: 600;
-  color: #0b0f19;
-  background-color: var(--color-primary);
-  border: none;
-  border-radius: 0.5rem;
+  color: #ffffff;
+  background-color: var(--color-admin-primary);
+  border: 1px solid var(--color-admin-primary);
+  border-radius: var(--radius-sm);
   cursor: pointer;
   margin-top: 0.5rem;
   transition:
-    background-color 0.2s ease,
-    opacity 0.2s ease;
+    background-color var(--transition-fast),
+    border-color var(--transition-fast);
 }
 
 .submitButton:hover:not(:disabled) {
-  background-color: var(--color-primary-hover);
+  background-color: var(--color-admin-primary-hover);
+  border-color: var(--color-admin-primary-hover);
+  color: #ffffff;
+}
+
+.submitButton:active:not(:disabled) {
+  background-color: var(--color-admin-primary-active);
+  border-color: var(--color-admin-primary-active);
+  color: #ffffff;
 }
 
 .submitButton:disabled {
-  opacity: 0.65;
+  opacity: 0.6;
   cursor: not-allowed;
 }
 
 .errorBanner {
-  margin-bottom: 1.25rem;
+  margin-bottom: 1rem;
 }

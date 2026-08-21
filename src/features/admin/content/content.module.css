@@ -13,14 +13,15 @@
 
 .title {
   margin: 0 0 0.25rem 0;
-  font-size: 1.5rem;
+  font-size: 1.65rem;
   font-weight: 700;
-  color: var(--color-text);
+  color: var(--color-admin-text);
+  letter-spacing: -0.01em;
 }
 
 .subtitle {
   margin: 0;
-  color: var(--color-text-muted);
+  color: var(--color-admin-text-muted);
   font-size: 0.95rem;
 }
 
@@ -29,12 +30,12 @@
   justify-content: space-between;
   align-items: center;
   gap: 1rem;
-  margin-bottom: 1.5rem;
-  background: var(--color-card-bg);
-  padding: 1rem 1.25rem;
+  margin-bottom: 1.75rem;
+  background: var(--color-admin-surface);
+  padding: 1.1rem 1.35rem;
   border-radius: var(--radius-md);
-  box-shadow: var(--shadow-sm);
-  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-xs);
+  border: 1px solid var(--color-admin-border);
   flex-wrap: wrap;
 }
 
@@ -47,25 +48,28 @@
 .selectLabel {
   font-weight: 600;
   font-size: 0.9rem;
-  color: var(--color-text);
+  color: var(--color-admin-text);
   white-space: nowrap;
 }
 
 .selectInput {
-  padding: 0.5rem 0.75rem;
+  padding: 0.55rem 0.85rem;
   border-radius: var(--radius-sm);
-  border: 1px solid var(--color-border);
-  background: var(--color-bg);
-  color: var(--color-text);
+  border: 1px solid var(--color-admin-border);
+  background: #ffffff;
+  color: var(--color-admin-text);
   font-size: 0.95rem;
   font-family: inherit;
-  min-width: 200px;
+  min-width: 210px;
+  transition:
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast);
 }
 
 .selectInput:focus {
   outline: none;
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 2px var(--color-primary-transparent);
+  border-color: var(--color-admin-primary);
+  box-shadow: 0 0 0 3px rgba(63, 100, 136, 0.2);
 }
 
 .selectInput:disabled {
@@ -77,19 +81,28 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0.55rem 1.2rem;
-  background: var(--color-primary);
+  padding: 0.6rem 1.25rem;
+  background: var(--color-admin-primary);
+  border: 1px solid var(--color-admin-primary);
   color: #ffffff;
   font-weight: 600;
   font-size: 0.95rem;
-  border: none;
   border-radius: var(--radius-sm);
   cursor: pointer;
-  transition: background-color 0.15s ease-in-out;
+  transition:
+    background-color var(--transition-fast),
+    border-color var(--transition-fast);
 }
 
 .createButton:hover:not(:disabled) {
-  background: var(--color-primary-dark);
+  background-color: var(--color-admin-primary-hover);
+  border-color: var(--color-admin-primary-hover);
+  color: #ffffff;
+}
+
+.createButton:focus-visible {
+  outline: 3px solid var(--color-admin-primary);
+  outline-offset: 2px;
 }
 
 .createButton:disabled {
@@ -98,20 +111,20 @@
 }
 
 .card {
-  background: var(--color-card-bg);
+  background: var(--color-admin-surface);
   border-radius: var(--radius-md);
-  box-shadow: var(--shadow-sm);
-  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-xs);
+  border: 1px solid var(--color-admin-border);
   padding: 1.5rem;
   margin-bottom: 1.5rem;
 }
 
 .emptyState {
-  background: var(--color-card-bg);
+  background: var(--color-admin-surface);
   border-radius: var(--radius-md);
-  box-shadow: var(--shadow-sm);
-  border: 1px solid var(--color-border);
-  padding: 3rem 1.5rem;
+  box-shadow: var(--shadow-xs);
+  border: 1px dashed var(--color-admin-border-strong);
+  padding: 3.5rem 1.5rem;
   text-align: center;
 }
 
@@ -119,35 +132,38 @@
   margin: 0 0 0.5rem 0;
   font-size: 1.2rem;
   font-weight: 600;
-  color: var(--color-text);
+  color: var(--color-admin-text);
 }
 
 .emptyDescription {
   margin: 0 0 1.5rem 0;
-  color: var(--color-text-muted);
+  color: var(--color-admin-text-muted);
   font-size: 0.95rem;
 }
 
 .blocksGrid {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 1.25rem;
 }
 
 .blockCard {
-  background: var(--color-card-bg);
+  background: var(--color-admin-surface);
   border-radius: var(--radius-md);
-  border: 1px solid var(--color-border);
-  padding: 1.25rem;
+  border: 1px solid var(--color-admin-border);
+  padding: 1.35rem;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
-  box-shadow: var(--shadow-sm);
-  transition: border-color 0.15s ease-in-out;
+  gap: 0.85rem;
+  box-shadow: var(--shadow-xs);
+  transition:
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast);
 }
 
 .blockCard:hover {
-  border-color: var(--color-primary-light);
+  border-color: var(--color-admin-border-strong);
+  box-shadow: var(--shadow-sm);
 }
 
 .blockHeader {
@@ -168,7 +184,7 @@
   margin: 0;
   font-size: 1.1rem;
   font-weight: 600;
-  color: var(--color-text);
+  color: var(--color-admin-text);
 }
 
 .typeBadge {
@@ -179,8 +195,9 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  background: var(--color-primary-transparent);
-  color: var(--color-primary);
+  background: var(--color-admin-primary-soft);
+  color: var(--color-admin-primary);
+  border: 1px solid rgba(63, 100, 136, 0.2);
 }
 
 .positionBadge {
@@ -189,22 +206,22 @@
   border-radius: var(--radius-sm);
   font-size: 0.75rem;
   font-weight: 600;
-  background: var(--color-bg);
-  color: var(--color-text-muted);
-  border: 1px solid var(--color-border);
+  background: var(--color-admin-surface-secondary);
+  color: var(--color-admin-text-muted);
+  border: 1px solid var(--color-admin-border);
 }
 
 .orderBadge {
   font-size: 0.85rem;
   font-weight: 600;
-  color: var(--color-text-muted);
+  color: var(--color-admin-text-muted);
 }
 
 .textPreview {
   margin: 0;
   font-size: 0.95rem;
-  color: var(--color-text);
-  line-height: 1.5;
+  color: var(--color-admin-text);
+  line-height: 1.55;
   white-space: pre-wrap;
   word-break: break-word;
   display: -webkit-box;
@@ -214,12 +231,12 @@
 }
 
 .mediaSummary {
-  background: var(--color-bg);
+  background: var(--color-admin-surface-secondary);
   border-radius: var(--radius-sm);
-  padding: 0.6rem 0.8rem;
-  border: 1px solid var(--color-border);
+  padding: 0.6rem 0.85rem;
+  border: 1px solid var(--color-admin-border);
   font-size: 0.85rem;
-  color: var(--color-text-muted);
+  color: var(--color-admin-text-muted);
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -231,8 +248,8 @@
   justify-content: space-between;
   gap: 0.5rem;
   margin-top: 0.5rem;
-  border-top: 1px solid var(--color-border);
-  padding-top: 0.75rem;
+  border-top: 1px solid var(--color-admin-border);
+  padding-top: 0.85rem;
   flex-wrap: wrap;
 }
 
@@ -242,26 +259,35 @@
   gap: 0.4rem;
 }
 
+/* Reorder Button (Utility / Ghost) */
 .reorderButton {
-  padding: 0.35rem 0.65rem;
-  font-size: 0.8rem;
+  padding: 0.4rem 0.75rem;
+  font-size: 0.85rem;
   font-weight: 600;
   border-radius: var(--radius-sm);
-  border: 1px solid var(--color-border);
-  background: var(--color-bg);
-  color: var(--color-text);
+  border: 1px solid var(--color-admin-border);
+  background: #ffffff;
+  color: var(--color-admin-primary);
   cursor: pointer;
-  transition: all 0.15s ease-in-out;
+  transition:
+    background-color var(--transition-fast),
+    border-color var(--transition-fast),
+    color var(--transition-fast);
 }
 
 .reorderButton:hover:not(:disabled) {
-  background: var(--color-card-bg);
-  border-color: var(--color-primary);
-  color: var(--color-primary);
+  background: var(--color-admin-primary-soft);
+  border-color: var(--color-admin-primary);
+  color: var(--color-admin-primary);
+}
+
+.reorderButton:focus-visible {
+  outline: 3px solid var(--color-admin-primary);
+  outline-offset: 2px;
 }
 
 .reorderButton:disabled {
-  opacity: 0.4;
+  opacity: 0.45;
   cursor: not-allowed;
 }
 
@@ -272,39 +298,58 @@
   margin-left: auto;
 }
 
+/* Edit Action Button */
 .actionButton {
-  padding: 0.4rem 0.8rem;
+  padding: 0.4rem 0.85rem;
   font-size: 0.85rem;
   font-weight: 600;
   border-radius: var(--radius-sm);
-  border: 1px solid var(--color-border);
-  background: var(--color-bg);
-  color: var(--color-text);
+  border: 1px solid var(--color-admin-border);
+  background: #ffffff;
+  color: var(--color-admin-text);
   cursor: pointer;
-  transition: all 0.15s ease-in-out;
+  transition:
+    background-color var(--transition-fast),
+    border-color var(--transition-fast),
+    color var(--transition-fast);
 }
 
 .actionButton:hover:not(:disabled) {
-  background: var(--color-card-bg);
-  border-color: var(--color-primary);
-  color: var(--color-primary);
+  background: var(--color-admin-primary-soft);
+  border-color: var(--color-admin-primary);
+  color: var(--color-admin-primary);
 }
 
+.actionButton:focus-visible {
+  outline: 3px solid var(--color-admin-primary);
+  outline-offset: 2px;
+}
+
+/* Delete Action Button */
 .deleteButton {
-  padding: 0.4rem 0.8rem;
+  padding: 0.4rem 0.85rem;
   font-size: 0.85rem;
   font-weight: 600;
   border-radius: var(--radius-sm);
-  border: 1px solid #fecaca;
-  background: #fef2f2;
-  color: #dc2626;
+  border: 1px solid var(--color-admin-danger-border);
+  background: var(--color-admin-danger-soft);
+  color: var(--color-admin-danger);
   cursor: pointer;
-  transition: all 0.15s ease-in-out;
+  transition:
+    background-color var(--transition-fast),
+    border-color var(--transition-fast),
+    color var(--transition-fast);
 }
 
 .deleteButton:hover:not(:disabled) {
-  background: #fee2e2;
-  border-color: #f87171;
+  background: var(--color-admin-danger);
+  border-color: var(--color-admin-danger);
+  color: #ffffff;
+}
+
+.deleteButton:focus-visible {
+  outline: 3px solid var(--color-admin-danger);
+  outline-offset: 2px;
 }
 
 .srOnly {
@@ -326,7 +371,9 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(20, 30, 40, 0.45);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -335,8 +382,8 @@
 }
 
 .modal {
-  background: var(--color-card-bg);
-  border-radius: var(--radius-md);
+  background: var(--color-admin-surface);
+  border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
   width: 100%;
   max-width: 550px;
@@ -344,6 +391,7 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  border: 1px solid var(--color-admin-border);
 }
 
 .modalHeader {
@@ -351,24 +399,30 @@
   justify-content: space-between;
   align-items: center;
   padding: 1.25rem 1.5rem;
-  border-bottom: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-admin-border);
 }
 
 .modalTitle {
   margin: 0;
   font-size: 1.2rem;
   font-weight: 700;
-  color: var(--color-text);
+  color: var(--color-admin-text);
 }
 
 .closeButton {
   background: transparent;
   border: none;
   font-size: 1.5rem;
-  color: var(--color-text-muted);
+  color: var(--color-admin-text-muted);
   cursor: pointer;
   padding: 0;
   line-height: 1;
+  border-radius: var(--radius-xs);
+  transition: color var(--transition-fast);
+}
+
+.closeButton:hover {
+  color: var(--color-admin-text);
 }
 
 .modalBody {
@@ -388,19 +442,22 @@
 .label {
   font-weight: 600;
   font-size: 0.9rem;
-  color: var(--color-text);
+  color: var(--color-admin-text);
 }
 
 .input,
 .textarea,
 .select {
-  padding: 0.6rem 0.8rem;
+  padding: 0.65rem 0.85rem;
   border-radius: var(--radius-sm);
-  border: 1px solid var(--color-border);
-  background: var(--color-bg);
-  color: var(--color-text);
+  border: 1px solid var(--color-admin-border);
+  background: #ffffff;
+  color: var(--color-admin-text);
   font-size: 0.95rem;
   font-family: inherit;
+  transition:
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast);
 }
 
 .textarea {
@@ -412,8 +469,8 @@
 .textarea:focus,
 .select:focus {
   outline: none;
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 2px var(--color-primary-transparent);
+  border-color: var(--color-admin-primary);
+  box-shadow: 0 0 0 3px rgba(63, 100, 136, 0.2);
 }
 
 .fileInput {
@@ -422,7 +479,7 @@
 
 .helperText {
   font-size: 0.8rem;
-  color: var(--color-text-muted);
+  color: var(--color-admin-text-muted);
   margin: 0;
 }
 
@@ -430,37 +487,83 @@
   display: flex;
   justify-content: flex-end;
   gap: 0.75rem;
-  padding: 1rem 1.5rem;
-  border-top: 1px solid var(--color-border);
-  background: var(--color-bg);
+  padding: 1.1rem 1.5rem;
+  border-top: 1px solid var(--color-admin-border);
+  background: var(--color-admin-surface-secondary);
 }
 
 .secondaryButton {
-  padding: 0.55rem 1.2rem;
-  background: var(--color-card-bg);
-  border: 1px solid var(--color-border);
-  color: var(--color-text);
+  padding: 0.6rem 1.25rem;
+  background: #ffffff;
+  border: 1px solid var(--color-admin-border);
+  color: var(--color-admin-text);
   font-weight: 600;
   font-size: 0.95rem;
   border-radius: var(--radius-sm);
   cursor: pointer;
+  transition:
+    background-color var(--transition-fast),
+    border-color var(--transition-fast);
 }
 
 .secondaryButton:hover:not(:disabled) {
-  background: var(--color-border);
+  background-color: var(--color-admin-surface-secondary);
+  border-color: var(--color-admin-border-strong);
 }
 
 .dangerButton {
-  padding: 0.55rem 1.2rem;
-  background: #dc2626;
-  border: none;
+  padding: 0.6rem 1.25rem;
+  background: var(--color-admin-danger);
+  border: 1px solid var(--color-admin-danger);
   color: #ffffff;
   font-weight: 600;
   font-size: 0.95rem;
   border-radius: var(--radius-sm);
   cursor: pointer;
+  transition:
+    background-color var(--transition-fast),
+    border-color var(--transition-fast);
 }
 
 .dangerButton:hover:not(:disabled) {
-  background: #b91c1c;
+  background-color: var(--color-admin-danger-hover);
+  border-color: var(--color-admin-danger-hover);
+  color: #ffffff;
+}
+
+@media (max-width: 640px) {
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .controlsRow {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .selectGroup {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .selectInput {
+    min-width: 100%;
+  }
+
+  .createButton {
+    width: 100%;
+  }
+
+  .actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+
+  .crudControls {
+    margin-left: 0;
+    width: 100%;
+    justify-content: flex-end;
+  }
 }

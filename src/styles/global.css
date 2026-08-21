@@ -6,39 +6,119 @@
 }
 
 :root {
+  /* Layout & Geometry */
   --header-height: 4rem;
   --page-max-width: 1200px;
-  --section-spacing: 4rem;
-  --color-primary: #1a365d;
-  --color-accent: #3182ce;
-  --color-bg: #f7fafc;
-  --color-surface: #ffffff;
-  --color-text: #2d3748;
-  --color-text-muted: #718096;
-  --color-border: #e2e8f0;
+  --section-spacing: 4.5rem;
+
+  /* Typography */
+  --font-body:
+    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-display: Georgia, "Times New Roman", ui-serif, Cambria, serif;
+
+  /* Spacing */
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2.5rem;
+
+  /* Radius */
+  --radius-xs: 0.25rem;
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+
+  /* Shadows */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-md:
+    0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
+  --shadow-lg:
+    0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+
+  /* Transitions */
+  --transition-fast: 150ms ease;
+  --transition-normal: 200ms ease;
+
+  /* PUBLIC PALETTE (Soft Editorial Musician Portfolio) */
+  --color-public-bg: #f6f2ec;
+  --color-public-surface: #fffcf8;
+  --color-public-surface-soft: #f0ebe4;
+  --color-public-text: #302c29;
+  --color-public-text-muted: #756e68;
+  --color-public-heading: #243a3a;
+  --color-public-accent: #a88955;
+  --color-public-accent-hover: #8e7041;
+  --color-public-accent-soft: #eee5d5;
+  --color-public-accent-text: #80613a;
+  --color-public-accent-text-hover: #755730;
+  --color-public-border: #ded7ce;
+
+  /* ADMIN PALETTE (Clean Accessible Workspace) */
+  --color-admin-bg: #f5f7f9;
+  --color-admin-surface: #ffffff;
+  --color-admin-surface-secondary: #eef2f5;
+  --color-admin-text: #24313d;
+  --color-admin-text-muted: #687785;
+  --color-admin-border: #d6dee6;
+  --color-admin-border-strong: #b8c4cf;
+
+  --color-admin-primary: #3f6488;
+  --color-admin-primary-hover: #325675;
+  --color-admin-primary-active: #29465f;
+  --color-admin-primary-soft: #e8f0f7;
+  --color-admin-primary-transparent: rgba(63, 100, 136, 0.12);
+
+  --color-admin-danger: #b34c4c;
+  --color-admin-danger-hover: #963d3d;
+  --color-admin-danger-soft: #fbecec;
+  --color-admin-danger-border: #f7c5c5;
+
+  --color-admin-success: #3e765d;
+  --color-admin-success-soft: #eaf4ef;
+
+  --color-admin-warning: #956c2d;
+  --color-admin-warning-soft: #faf2e5;
+
+  /* LEGACY / COMMON TOKEN MAPPINGS (Ensures 0 Undefined Variables) */
+  --color-primary: var(--color-admin-primary);
+  --color-primary-hover: var(--color-admin-primary-hover);
+  --color-primary-dark: var(--color-admin-primary-active);
+  --color-primary-active: var(--color-admin-primary-active);
+  --color-primary-soft: var(--color-admin-primary-soft);
+  --color-primary-light: #5c82a6;
+  --color-primary-transparent: var(--color-admin-primary-transparent);
+
+  --color-accent: var(--color-public-accent);
+  --color-accent-hover: var(--color-public-accent-hover);
+
+  --color-bg: var(--color-public-bg);
+  --color-background: var(--color-admin-bg);
+  --color-surface: var(--color-public-surface);
+  --color-card-bg: #ffffff;
+
+  --color-text: var(--color-admin-text);
+  --color-text-muted: var(--color-admin-text-muted);
+  --color-border: var(--color-admin-border);
+  --color-border-strong: var(--color-admin-border-strong);
 }
 
 html {
-  font-family:
-    system-ui,
-    -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI",
-    Roboto,
-    Oxygen,
-    Ubuntu,
-    Cantarell,
-    sans-serif;
-  line-height: 1.5;
+  font-family: var(--font-body);
+  line-height: 1.6;
   -webkit-text-size-adjust: 100%;
   scroll-behavior: smooth;
+  color: var(--color-admin-text);
+  background-color: var(--color-public-bg);
 }
 
 body {
   margin: 0;
   padding: 0;
-  color: var(--color-text);
-  background-color: var(--color-bg);
+  color: var(--color-public-text);
+  background-color: var(--color-public-bg);
 }
 
 button,
@@ -63,7 +143,19 @@ video {
   display: block;
 }
 
+/* W3C Focus Visible Standard */
 :focus-visible {
-  outline: 2px solid var(--color-accent);
+  outline: 3px solid var(--color-admin-primary);
   outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

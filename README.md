@@ -29,8 +29,8 @@ Frontend single-page application and Admin CMS for the SPA Saxophone Ensemble pr
 
 ## Prerequisites
 
-- Node.js (v18+ or v20+)
-- npm (v9+)
+- Node.js 24+ (specified in `.nvmrc`)
+- npm (v10+)
 - Docker (optional, for containerized production deployment)
 - Rust/Rocket Backend running on `http://localhost:8000`
 
@@ -108,6 +108,48 @@ Verify endpoints:
 3. **Canonical Handshake**: ContentBlock reorder POST requires explicit canonical GET fetch confirmation before announcing updated position.
 4. **Strict Media Discrimination**: Media payload responses undergo strict Zod schema validation matching expected media type (`image`, `video`, `youtube`).
 5. **No HTML Injection**: Zero usage of `dangerouslySetInnerHTML`, raw HTML string injection, or unvalidated iframes.
+
+## Visual Design System & Token Architecture
+
+The visual architecture separates public visitor experience from administrative workspace tooling while maintaining shared spacing and token hygiene:
+
+- **Public Site (Soft Editorial Musician Portfolio)**: Warm paper aesthetic (`#F6F2EC` background, `#FFFCF8` cards), serif display typography (`Georgia`), decorative brass accents (`#A88955`), text-safe brass tokens (`#80613A`, 5.13:1 contrast ratio against `#F6F2EC`), translucent sticky header, and editorial section spacing.
+- **Decorative vs Text-Safe Brass**:
+  - `Decorative Brass` (`--color-public-accent: #A88955`): Used for non-text ornamental elements (borders, underlines, card highlights).
+  - `Text-Safe Brass` (`--color-public-accent-text: #80613A`): Used for normal-sized public navigation, brand hover, and active text states (WCAG AA 5.13:1 contrast).
+  - `Text-Hover Brass` (`--color-public-accent-text-hover: #755730`): Used for interactive hover states (6.04:1 contrast).
+- **Admin UI (Clean Accessible Workspace)**: Cool neutral workspace (`#F5F7F9` background, `#FFFFFF` cards), dark slate typography (`#24313D`), muted slate blue primary action system (`#3F6488`), and systematic button variants.
+- **Systematic Button System**: High-contrast states across default, hover, active, and disabled across primary (`#3F6488`), secondary/edit (`#FFFFFF` outline), danger (`#B34C4C`), and utility/reorder controls.
+- **Accessibility & Focus Philosophy**: Scoped high-contrast W3C `:focus-visible` rings (`outline: 3px solid #243A3A` on public, `outline: 3px solid #3F6488` on admin), WCAG AA contrast compliance, `@media (prefers-reduced-motion: reduce)` support, and 0 undefined CSS variables (`var(--...)`).
+
+## Continuous Integration
+
+Automated quality verification is managed via GitHub Actions ([.github/workflows/ci.yml](file:///.github/workflows/ci.yml)):
+
+- **Triggers**: Pushes to `main`, Pull Requests to `main`, and manual execution (`workflow_dispatch`).
+- **Node.js Environment**: Standardized on Node.js 24 via `.nvmrc` with npm dependency caching (`package-lock.json`).
+- **Quality Gates**:
+  1. `Install dependencies`: `npm ci`
+  2. `Check formatting`: `npm run format:check`
+  3. `Lint`: `npm run lint`
+  4. `Typecheck`: `npm run typecheck`
+  5. `Test`: `npm run test:run`
+  6. `Production Vite build`: `VITE_API_BASE_URL=http://localhost:8000 npm run build`
+- **Docker Image Build Validation**: Follows successful `quality` gate to verify multi-stage production Docker build (`node:24-alpine` -> `nginx:alpine`).
+
+### Local Developer Quality Parity
+
+Developers should run the full suite before pushing code:
+
+```bash
+npm ci
+npm run format:check
+npm run lint
+npm run typecheck
+npm run test:run
+VITE_API_BASE_URL=http://localhost:8000 npm run build
+docker build --build-arg VITE_API_BASE_URL=http://localhost:8000 -t react-spa-sax:ci .
+```
 
 ## Project Architecture
 
