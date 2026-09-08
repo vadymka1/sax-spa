@@ -597,6 +597,12 @@ describe("FRONTEND F8 — Final Integration & Release Validation", () => {
       const fileInput = screen.getByLabelText("Upload Image File");
       fireEvent.change(fileInput, { target: { files: [testFile] } });
 
+      await waitFor(() => {
+        expect(
+          screen.getByRole("button", { name: "Create Block" }),
+        ).toBeEnabled();
+      });
+
       // 5. Submit form -> triggers media upload POST then content block create POST
       fireEvent.click(screen.getByRole("button", { name: "Create Block" }));
 
@@ -605,10 +611,10 @@ describe("FRONTEND F8 — Final Integration & Release Validation", () => {
       // Assert media upload request was issued once
       expect(mediaUploadCount).toBe(1);
 
-      // Assert content block create payload contained uploaded media_id
+      // Assert content block create payload contained uploaded media_ids
       expect(blockCreatePayload).not.toBeNull();
       const payload = blockCreatePayload!;
-      expect(payload.media_id).toBe(MEDIA_IDS.m1);
+      expect(payload.media_ids).toEqual([MEDIA_IDS.m1]);
       expect(payload.block_type).toBe("text_image");
 
       // 6. Edit text only without selecting new file

@@ -31,4 +31,12 @@ export const handlers = [
       },
     });
   }),
+  http.post("http://localhost:8000/api/v1/public/contact", () => {
+    return HttpResponse.json({
+      data: {
+        success: true,
+        message: "Message sent successfully",
+      },
+    });
+  }),
 ];

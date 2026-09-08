@@ -489,6 +489,12 @@ describe("FRONTEND F6 — Admin ContentBlock Management + Media", () => {
     });
     fireEvent.change(fileInput, { target: { files: [testFile] } });
 
+    await waitFor(() => {
+      expect(
+        screen.getByRole("button", { name: "Create Block" }),
+      ).toBeEnabled();
+    });
+
     fireEvent.click(screen.getByRole("button", { name: "Create Block" }));
 
     await waitFor(() => {
@@ -498,7 +504,7 @@ describe("FRONTEND F6 — Admin ContentBlock Management + Media", () => {
         spa_section_id: SECTION_IDS.awards,
         block_type: "text_image",
         text: "Image description text",
-        media_id: MEDIA_IDS.m1,
+        media_ids: [MEDIA_IDS.m1],
       });
     });
   });
@@ -1250,6 +1256,7 @@ describe("FRONTEND F6 — Admin ContentBlock Management + Media", () => {
         spa_section_id: SECTION_IDS.partners,
         title: "Gold Medal Ceremony",
         text: "Receiving the gold medal on stage.",
+        media_ids: [MEDIA_IDS.m1],
       });
       expect(screen.queryByText("Gold Medal Ceremony")).toBeNull();
     });
@@ -1470,6 +1477,9 @@ describe("FRONTEND F6 — Admin ContentBlock Management + Media", () => {
     fireEvent.change(fileInput, { target: { files: [testFile] } });
 
     const submitBtn = screen.getByRole("button", { name: "Create Block" });
+    await waitFor(() => {
+      expect(submitBtn).toBeEnabled();
+    });
     fireEvent.click(submitBtn);
     fireEvent.click(submitBtn);
 
@@ -2745,7 +2755,7 @@ describe("FRONTEND F6 — Admin ContentBlock Management + Media", () => {
   /* FRONTEND F7.1 — Canonical Reorder Accessibility + Server-Owned sort_order Hardening */
 
   describe("F7.1 buildReorderItems helper unit tests", () => {
-    it("builds reorder payload reusing exact sorted set of existing sort_order values without client fallback", () => {
+    it("builds reorder payload assigning canonical 10-step sequence (10, 20, 30) for reordered blocks", () => {
       const currentBlocks = [
         { ...mockAwardsBlocks[0]!, id: BLOCK_IDS.b1, sort_order: 10 },
         { ...mockAwardsBlocks[1]!, id: BLOCK_IDS.b2, sort_order: 30 },
@@ -2761,8 +2771,8 @@ describe("FRONTEND F6 — Admin ContentBlock Management + Media", () => {
       const items = buildReorderItems(currentBlocks, reorderedBlocks);
       expect(items).toEqual([
         { id: BLOCK_IDS.b2, sort_order: 10 },
-        { id: BLOCK_IDS.b3, sort_order: 30 },
-        { id: BLOCK_IDS.b1, sort_order: 70 },
+        { id: BLOCK_IDS.b3, sort_order: 20 },
+        { id: BLOCK_IDS.b1, sort_order: 30 },
       ]);
     });
 

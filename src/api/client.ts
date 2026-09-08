@@ -33,7 +33,11 @@ export const apiClient: AxiosInstance = axios.create({
 
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    if (accessTokenProvider) {
+    const url = config.url ?? "";
+    const isPublic =
+      url.includes("/api/v1/public/contact") ||
+      url.includes("/api/v1/public/page");
+    if (!isPublic && accessTokenProvider) {
       const token = accessTokenProvider();
       if (token && config.headers) {
         config.headers.Authorization = `Bearer ${token}`;
@@ -55,7 +59,9 @@ apiClient.interceptors.response.use(
       const isExcludedAuthEndpoint =
         url.includes("/api/v1/auth/login") ||
         url.includes("/api/v1/auth/refresh") ||
-        url.includes("/api/v1/auth/logout");
+        url.includes("/api/v1/auth/logout") ||
+        url.includes("/api/v1/public/contact") ||
+        url.includes("/api/v1/public/page");
 
       if (
         status === 401 &&

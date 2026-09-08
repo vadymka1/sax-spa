@@ -1,5 +1,6 @@
 import React from "react";
 import { PublicSpaSection, PublicContentBlock } from "../../api/types";
+import { ContactForm } from "./ContactForm";
 import { ContentBlockRenderer } from "./ContentBlockRenderer";
 import styles from "./PublicSection.module.css";
 
@@ -8,6 +9,8 @@ interface PublicSectionProps {
 }
 
 export const PublicSection: React.FC<PublicSectionProps> = ({ section }) => {
+  const isContactSection = section.key === "contact-us";
+
   return (
     <section id={section.key} className={styles.section}>
       <h2 className={styles.sectionTitle}>{section.title}</h2>
@@ -19,6 +22,8 @@ export const PublicSection: React.FC<PublicSectionProps> = ({ section }) => {
           ))}
         </div>
       )}
+
+      {isContactSection && <ContactForm />}
     </section>
   );
 };

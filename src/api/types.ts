@@ -22,12 +22,13 @@ export const PublicPageSchema = z.object({
 });
 export type PublicPage = z.infer<typeof PublicPageSchema>;
 
-export const ContentBlockTypeSchema = z.enum([
+export const CONTENT_BLOCK_TYPE_VALUES = [
   "text",
   "text_image",
   "text_video",
   "text_youtube",
-]);
+] as const;
+export const ContentBlockTypeSchema = z.enum(CONTENT_BLOCK_TYPE_VALUES);
 export type ContentBlockType = z.infer<typeof ContentBlockTypeSchema>;
 
 export const PublicImageMediaSchema = z.object({
@@ -62,13 +63,30 @@ export const PublicMediaSchema = z.discriminatedUnion("type", [
 ]);
 export type PublicMedia = z.infer<typeof PublicMediaSchema>;
 
+export const FONT_FAMILY_VALUES = ["sans", "serif", "display", "mono"] as const;
+export const FontFamilySchema = z.enum(FONT_FAMILY_VALUES);
+export type FontFamily = z.infer<typeof FontFamilySchema>;
+
+export const FONT_SIZE_VALUES = ["sm", "md", "lg", "xl", "2xl"] as const;
+export const FontSizeSchema = z.enum(FONT_SIZE_VALUES);
+export type FontSize = z.infer<typeof FontSizeSchema>;
+
 export const PublicContentBlockSchema = z.object({
   id: z.string().uuid(),
   block_type: ContentBlockTypeSchema,
   title: z.string().nullable().optional(),
   text: z.string(),
-  media: PublicMediaSchema.nullable().optional(),
-  sort_order: z.number().int(),
+  media: z.preprocess(
+    (val) => {
+      if (val === null || val === undefined) return null;
+      if (Array.isArray(val)) return val;
+      return [val];
+    },
+    z.union([z.array(PublicMediaSchema), PublicMediaSchema, z.null()]),
+  ),
+  font_family: FontFamilySchema.nullable().optional(),
+  font_size: FontSizeSchema.nullable().optional(),
+  sort_order: z.number().int().optional(),
 });
 export type PublicContentBlock = z.infer<typeof PublicContentBlockSchema>;
 
@@ -236,7 +254,20 @@ export const AdminContentBlockDtoSchema = z.object({
   block_type: ContentBlockTypeSchema,
   title: z.string().nullable().optional(),
   text: z.string(),
-  media: BlockAttachedMediaDtoSchema.nullable().optional(),
+  media: z.preprocess(
+    (val) => {
+      if (val === null || val === undefined) return null;
+      if (Array.isArray(val)) return val;
+      return [val];
+    },
+    z.union([
+      z.array(BlockAttachedMediaDtoSchema),
+      BlockAttachedMediaDtoSchema,
+      z.null(),
+    ]),
+  ),
+  font_family: FontFamilySchema.nullable().optional(),
+  font_size: FontSizeSchema.nullable().optional(),
   sort_order: z.number().int(),
   is_visible: z.boolean(),
   created_at: z.string(),
@@ -250,6 +281,9 @@ export const CreateContentBlockRequestSchema = z.object({
   title: z.string().optional(),
   text: z.string(),
   media_id: z.string().uuid().optional(),
+  media_ids: z.array(z.string().uuid()).optional(),
+  font_family: FontFamilySchema.optional(),
+  font_size: FontSizeSchema.optional(),
   is_visible: z.boolean().optional(),
 });
 export type CreateContentBlockRequest = z.infer<
@@ -262,6 +296,9 @@ export const UpdateContentBlockRequestSchema = z.object({
   title: z.string().optional(),
   text: z.string().optional(),
   media_id: z.string().uuid().nullable().optional(),
+  media_ids: z.array(z.string().uuid()).optional(),
+  font_family: FontFamilySchema.optional(),
+  font_size: FontSizeSchema.optional(),
   is_visible: z.boolean().optional(),
 });
 export type UpdateContentBlockRequest = z.infer<
@@ -332,3 +369,25 @@ export const CreateYoutubeMediaRequestSchema = z.object({
 export type CreateYoutubeMediaRequest = z.infer<
   typeof CreateYoutubeMediaRequestSchema
 >;
+
+// Public Contact Form Schemas & Types
+export const ContactRequestSchema = z.object({
+  name: z.string().min(1, "Name is required").max(100, "Name is too long"),
+  email: z
+    .string()
+    .email("Invalid email address")
+    .max(255, "Email is too long"),
+  subject: z.string().max(200, "Subject is too long").optional(),
+  message: z
+    .string()
+    .min(1, "Message is required")
+    .max(5000, "Message is too long"),
+});
+export type ContactRequest = z.infer<typeof ContactRequestSchema>;
+
+export const ContactResponseSchema = z.object({
+  id: z.string().uuid().optional(),
+  message: z.string().optional(),
+  status: z.string().optional(),
+});
+export type ContactResponse = z.infer<typeof ContactResponseSchema>;

@@ -1,6 +1,7 @@
 import React from "react";
 import { PublicContentBlock } from "../../../api/types";
 import { isYoutubeMedia } from "../../../lib/mediaGuards";
+import { FONT_FAMILY_CLASS, FONT_SIZE_CLASS } from "../typography";
 import styles from "./ContentBlock.module.css";
 
 interface TextYoutubeBlockProps {
@@ -12,13 +13,19 @@ export const TextYoutubeBlock: React.FC<TextYoutubeBlockProps> = ({
 }) => {
   const hasTitle = Boolean(block.title?.trim());
   const hasText = Boolean(block.text?.trim());
-  const youtubeMedia = isYoutubeMedia(block.media) ? block.media : null;
+  const youtubeMedia = Array.isArray(block.media)
+    ? (block.media.find(isYoutubeMedia) ?? null)
+    : isYoutubeMedia(block.media)
+      ? block.media
+      : null;
 
   if (!hasTitle && !hasText && !youtubeMedia) {
     return null;
   }
 
   const iframeTitle = block.title?.trim() || "YouTube video";
+  const fontFamilyClass = FONT_FAMILY_CLASS[block.font_family || "sans"];
+  const fontSizeClass = FONT_SIZE_CLASS[block.font_size || "md"];
 
   return (
     <article
@@ -28,7 +35,13 @@ export const TextYoutubeBlock: React.FC<TextYoutubeBlockProps> = ({
       {(hasTitle || hasText) && (
         <div className={styles.textContent}>
           {hasTitle && <h3 className={styles.blockTitle}>{block.title}</h3>}
-          {hasText && <p className={styles.blockText}>{block.text}</p>}
+          {hasText && (
+            <p
+              className={`${styles.blockText} ${fontFamilyClass} ${fontSizeClass}`}
+            >
+              {block.text}
+            </p>
+          )}
         </div>
       )}
       {youtubeMedia && (
