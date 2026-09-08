@@ -75,15 +75,26 @@ export const ContentBlocksList: React.FC<ContentBlocksListProps> = ({
 
             <p className={styles.textPreview}>{block.text}</p>
 
-            {block.media && (
-              <div className={styles.mediaSummary}>
-                <strong>Media ({block.media.media_type}):</strong>{" "}
-                {block.media.original_filename ||
-                  block.media.youtube_url ||
-                  block.media.id}
-                {block.media.mime_type && ` [${block.media.mime_type}]`}
-              </div>
-            )}
+            {(() => {
+              const mediaList = Array.isArray(block.media)
+                ? block.media
+                : block.media
+                  ? [block.media]
+                  : [];
+              const first = mediaList[0];
+              if (!first) return null;
+              return (
+                <div className={styles.mediaSummary}>
+                  <strong>Media ({first.media_type}):</strong>{" "}
+                  {mediaList.length > 1
+                    ? `${mediaList.length} files attached`
+                    : first.original_filename || first.youtube_url || first.id}
+                  {mediaList.length === 1 &&
+                    first.mime_type &&
+                    ` [${first.mime_type}]`}
+                </div>
+              );
+            })()}
 
             <div className={styles.actions}>
               <div className={styles.reorderControls}>

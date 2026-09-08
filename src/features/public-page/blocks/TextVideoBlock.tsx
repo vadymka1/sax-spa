@@ -1,6 +1,7 @@
 import React from "react";
 import { PublicContentBlock } from "../../../api/types";
 import { isVideoMedia } from "../../../lib/mediaGuards";
+import { FONT_FAMILY_CLASS, FONT_SIZE_CLASS } from "../typography";
 import styles from "./ContentBlock.module.css";
 
 interface TextVideoBlockProps {
@@ -10,11 +11,18 @@ interface TextVideoBlockProps {
 export const TextVideoBlock: React.FC<TextVideoBlockProps> = ({ block }) => {
   const hasTitle = Boolean(block.title?.trim());
   const hasText = Boolean(block.text?.trim());
-  const videoMedia = isVideoMedia(block.media) ? block.media : null;
+  const videoMedia = Array.isArray(block.media)
+    ? (block.media.find(isVideoMedia) ?? null)
+    : isVideoMedia(block.media)
+      ? block.media
+      : null;
 
   if (!hasTitle && !hasText && !videoMedia) {
     return null;
   }
+
+  const fontFamilyClass = FONT_FAMILY_CLASS[block.font_family || "sans"];
+  const fontSizeClass = FONT_SIZE_CLASS[block.font_size || "md"];
 
   return (
     <article
@@ -24,7 +32,13 @@ export const TextVideoBlock: React.FC<TextVideoBlockProps> = ({ block }) => {
       {(hasTitle || hasText) && (
         <div className={styles.textContent}>
           {hasTitle && <h3 className={styles.blockTitle}>{block.title}</h3>}
-          {hasText && <p className={styles.blockText}>{block.text}</p>}
+          {hasText && (
+            <p
+              className={`${styles.blockText} ${fontFamilyClass} ${fontSizeClass}`}
+            >
+              {block.text}
+            </p>
+          )}
         </div>
       )}
       {videoMedia && (

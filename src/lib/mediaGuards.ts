@@ -72,8 +72,9 @@ export function isMediaCompatibleWithBlockType(
 
 export interface ContentBlockDraftOptions {
   blockType: ContentBlockType;
-  existingMedia?: BlockAttachedMediaDto | null;
+  existingMedia?: BlockAttachedMediaDto | BlockAttachedMediaDto[] | null;
   newFile?: File | null;
+  attachedMediaIds?: string[];
   youtubeUrl?: string;
   isEdit?: boolean;
 }
@@ -81,20 +82,28 @@ export interface ContentBlockDraftOptions {
 export function validateContentBlockDraft(
   options: ContentBlockDraftOptions,
 ): string | null {
-  const { blockType, existingMedia, newFile, youtubeUrl } = options;
+  const { blockType, existingMedia, newFile, attachedMediaIds, youtubeUrl } =
+    options;
 
   switch (blockType) {
     case "text":
       return null;
 
     case "text_image": {
+      if (attachedMediaIds && attachedMediaIds.length > 0) {
+        return null;
+      }
       if (newFile) {
         if (newFile.type && !newFile.type.startsWith("image/")) {
           return "Selected file must be an image file.";
         }
         return null;
       }
-      if (existingMedia && existingMedia.media_type === "image") {
+      if (Array.isArray(existingMedia)) {
+        if (existingMedia.some((m) => m.media_type === "image")) {
+          return null;
+        }
+      } else if (existingMedia && existingMedia.media_type === "image") {
         return null;
       }
       return "An image file is required for Text + Image blocks.";
@@ -107,7 +116,11 @@ export function validateContentBlockDraft(
         }
         return null;
       }
-      if (existingMedia && existingMedia.media_type === "video") {
+      if (Array.isArray(existingMedia)) {
+        if (existingMedia.some((m) => m.media_type === "video")) {
+          return null;
+        }
+      } else if (existingMedia && existingMedia.media_type === "video") {
         return null;
       }
       return "A video file is required for Text + Video blocks.";
@@ -117,7 +130,11 @@ export function validateContentBlockDraft(
       if (youtubeUrl && youtubeUrl.trim()) {
         return null;
       }
-      if (existingMedia && existingMedia.media_type === "youtube") {
+      if (Array.isArray(existingMedia)) {
+        if (existingMedia.some((m) => m.media_type === "youtube")) {
+          return null;
+        }
+      } else if (existingMedia && existingMedia.media_type === "youtube") {
         return null;
       }
       return "A YouTube URL or ID is required for Text + YouTube blocks.";

@@ -98,6 +98,60 @@
   }
 }
 
+.carouselBlock {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 1.75rem !important;
+}
+
+.carouselBlock .textContent {
+  max-width: 1050px;
+}
+
+/* Typography Variants */
+.fontSans {
+  font-family: var(--font-body);
+}
+
+.fontSerif {
+  font-family: Georgia, "Times New Roman", Cambria, serif;
+}
+
+.fontDisplay {
+  font-family: var(--font-display);
+}
+
+.fontMono {
+  font-family:
+    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+    "Courier New", monospace;
+}
+
+.fontSizeSm {
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+.fontSizeMd {
+  font-size: 1.05rem;
+  line-height: 1.75;
+}
+
+.fontSizeLg {
+  font-size: 1.2rem;
+  line-height: 1.7;
+}
+
+.fontSizeXl {
+  font-size: 1.35rem;
+  line-height: 1.65;
+}
+
+.fontSize2xl {
+  font-size: 1.55rem;
+  line-height: 1.6;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .blockContainer {
     transition: none;
