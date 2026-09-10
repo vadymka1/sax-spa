@@ -449,6 +449,7 @@ describe("FRONTEND F4.2 — Honest Contract-B Session Model + Token Hygiene", ()
               title: "Public SPA Page",
             },
             sections: [],
+            testimonials: [],
           },
         });
       }),
@@ -481,6 +482,7 @@ describe("FRONTEND F4.2 — Honest Contract-B Session Model + Token Hygiene", ()
               title: "Public SPA Page",
             },
             sections: [],
+            testimonials: [],
           },
         });
       }),

@@ -57,7 +57,11 @@ export const PublicPage: React.FC = () => {
       <main id="top" className={styles.mainContent}>
         {data.sections.length > 0 ? (
           data.sections.map((section) => (
-            <PublicSection key={section.id} section={section} />
+            <PublicSection
+              key={section.id}
+              section={section}
+              testimonials={data.testimonials}
+            />
           ))
         ) : (
           <div className={styles.emptyPageState}>

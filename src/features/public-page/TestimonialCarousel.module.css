@@ -1,0 +1,205 @@
+.testimonialsWrapper {
+  width: 100%;
+  max-width: 900px;
+  margin: 2rem auto 0;
+}
+
+.carouselContainer {
+  position: relative;
+  width: 100%;
+  border-radius: var(--radius-lg);
+  background: var(--color-public-surface);
+  border: 1px solid var(--color-public-border);
+  box-shadow: var(--shadow-sm);
+  padding: 3rem 4rem;
+  outline: none;
+  transition: box-shadow var(--transition-fast);
+}
+
+.carouselContainer:focus-visible {
+  outline: 3px solid var(--color-public-accent);
+  outline-offset: 2px;
+}
+
+.staticCard {
+  width: 100%;
+  border-radius: var(--radius-lg);
+  background: var(--color-public-surface);
+  border: 1px solid var(--color-public-border);
+  box-shadow: var(--shadow-sm);
+  padding: 3rem 4rem;
+}
+
+.quoteMark {
+  font-family: var(--font-display);
+  font-size: 4rem;
+  line-height: 1;
+  color: var(--color-public-accent);
+  opacity: 0.6;
+  margin-bottom: -1rem;
+  user-select: none;
+}
+
+.quoteText {
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  line-height: 1.7;
+  color: var(--color-public-heading);
+  font-style: italic;
+  margin: 0 0 2rem 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.authorFooter {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  border-top: 1px solid var(--color-public-border);
+  padding-top: 1.5rem;
+}
+
+.avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--color-public-accent-soft);
+  flex-shrink: 0;
+  background-color: var(--color-public-surface-soft);
+}
+
+.avatarFallback {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: var(--color-public-accent-soft);
+  color: var(--color-public-accent-text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-weight: 700;
+  flex-shrink: 0;
+  border: 2px solid rgba(168, 137, 85, 0.25);
+}
+
+.authorDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.authorName {
+  font-family: var(--font-body);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--color-public-text);
+  margin: 0;
+}
+
+.authorRole {
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  color: var(--color-public-text-muted);
+  margin: 0;
+}
+
+.carouselControls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 1.5rem;
+  padding: 0 0.5rem;
+}
+
+.navButtonGroup {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.navButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 50%;
+  background: var(--color-public-surface);
+  border: 1px solid var(--color-public-border);
+  color: var(--color-public-heading);
+  font-size: 1.25rem;
+  cursor: pointer;
+  transition:
+    background-color var(--transition-fast),
+    border-color var(--transition-fast),
+    transform var(--transition-fast);
+  box-shadow: var(--shadow-xs);
+}
+
+.navButton:hover:not(:disabled) {
+  background: var(--color-public-accent-soft);
+  border-color: var(--color-public-accent);
+  color: var(--color-public-accent-text-hover);
+  transform: translateY(-1px);
+}
+
+.navButton:focus-visible {
+  outline: 3px solid var(--color-public-accent);
+  outline-offset: 2px;
+}
+
+.positionIndicator {
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--color-public-text-muted);
+}
+
+@media (max-width: 640px) {
+  .carouselContainer,
+  .staticCard {
+    padding: 2rem 1.5rem;
+  }
+
+  .quoteMark {
+    font-size: 3rem;
+  }
+
+  .quoteText {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+  }
+
+  .avatar,
+  .avatarFallback {
+    width: 48px;
+    height: 48px;
+    font-size: 1.15rem;
+  }
+
+  .authorName {
+    font-size: 1rem;
+  }
+
+  .authorRole {
+    font-size: 0.85rem;
+  }
+
+  .navButton {
+    width: 2.35rem;
+    height: 2.35rem;
+    font-size: 1.1rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .navButton {
+    transition: none;
+    transform: none;
+  }
+}

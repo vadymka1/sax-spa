@@ -1,15 +1,25 @@
 import React from "react";
-import { PublicSpaSection, PublicContentBlock } from "../../api/types";
+import {
+  PublicSpaSection,
+  PublicContentBlock,
+  PublicTestimonial,
+} from "../../api/types";
 import { ContactForm } from "./ContactForm";
 import { ContentBlockRenderer } from "./ContentBlockRenderer";
+import { TestimonialCarousel } from "./TestimonialCarousel";
 import styles from "./PublicSection.module.css";
 
 interface PublicSectionProps {
   section: PublicSpaSection;
+  testimonials?: PublicTestimonial[];
 }
 
-export const PublicSection: React.FC<PublicSectionProps> = ({ section }) => {
+export const PublicSection: React.FC<PublicSectionProps> = ({
+  section,
+  testimonials,
+}) => {
   const isContactSection = section.key === "contact-us";
+  const isTestimonialsSection = section.key === "testimonials";
 
   return (
     <section id={section.key} className={styles.section}>
@@ -24,6 +34,9 @@ export const PublicSection: React.FC<PublicSectionProps> = ({ section }) => {
       )}
 
       {isContactSection && <ContactForm />}
+      {isTestimonialsSection && (
+        <TestimonialCarousel testimonials={testimonials} />
+      )}
     </section>
   );
 };

@@ -89,7 +89,7 @@ export const SpaSectionEditModal: React.FC<SpaSectionEditModalProps> = ({
           </button>
         </div>
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} className={styles.modalForm}>
           <div className={styles.modalBody}>
             {updateMutation.error && (
               <ErrorMessage error={updateMutation.error} />

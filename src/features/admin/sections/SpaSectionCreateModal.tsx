@@ -76,7 +76,7 @@ export const SpaSectionCreateModal: React.FC<SpaSectionCreateModalProps> = ({
           </button>
         </div>
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} className={styles.modalForm}>
           <div className={styles.modalBody}>
             {createMutation.error && (
               <ErrorMessage error={createMutation.error} />

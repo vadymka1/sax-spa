@@ -304,7 +304,7 @@ export const ContentBlockEditModal: React.FC<ContentBlockEditModalProps> = ({
           </button>
         </div>
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} className={styles.modalForm}>
           <div className={styles.modalBody}>
             {formError && (
               <p style={{ color: "#dc2626", margin: 0 }}>{formError}</p>

@@ -285,6 +285,7 @@ describe("FRONTEND F8 — Final Integration & Release Validation", () => {
               blocks: [], // Empty visible section
             },
           ],
+          testimonials: [],
         },
       };
 

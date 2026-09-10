@@ -53,6 +53,14 @@ export const AdminLayout: React.FC = () => {
             >
               Content
             </NavLink>
+            <NavLink
+              to="/admin/testimonials"
+              className={({ isActive }) =>
+                `${styles.navLink} ${isActive ? styles.activeNavLink : ""}`
+              }
+            >
+              Testimonials
+            </NavLink>
             {user?.role === "super_admin" && (
               <NavLink
                 to="/admin/users"

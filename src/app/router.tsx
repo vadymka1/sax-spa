@@ -7,6 +7,7 @@ import { AdminLayout } from "../features/admin/AdminLayout";
 import { AdminDashboard } from "../features/admin/AdminDashboard";
 import { SpaSectionsPage } from "../features/admin/sections/SpaSectionsPage";
 import { ContentBlocksPage } from "../features/admin/content/ContentBlocksPage";
+import { TestimonialsPage } from "../features/admin/testimonials/TestimonialsPage";
 import { UsersPage } from "../features/admin/users/UsersPage";
 import { RequireRole } from "../features/auth/RequireRole";
 import { NotFoundPage } from "../components/common/NotFoundPage";
@@ -38,6 +39,10 @@ const router = createBrowserRouter([
           {
             path: "content",
             element: <ContentBlocksPage />,
+          },
+          {
+            path: "testimonials",
+            element: <TestimonialsPage />,
           },
           {
             path: "users",
