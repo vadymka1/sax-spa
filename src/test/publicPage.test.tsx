@@ -67,6 +67,7 @@ const mockDynamicPublicPageResponse = {
         ],
       },
     ],
+    testimonials: [],
   },
 };
 
@@ -214,6 +215,7 @@ const mockTwelveSectionsPublicPageResponse = {
         blocks: [],
       },
     ],
+    testimonials: [],
   },
 };
 
@@ -465,6 +467,7 @@ describe("PublicPage Feature F2", () => {
               title: "Empty Saxophone Page",
             },
             sections: [],
+            testimonials: [],
           },
         });
       }),
@@ -682,6 +685,7 @@ describe("PublicPage Feature F2", () => {
             ],
           },
         ],
+        testimonials: [],
       },
     };
 

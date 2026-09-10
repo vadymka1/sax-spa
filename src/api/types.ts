@@ -100,9 +100,21 @@ export const PublicSpaSectionSchema = z.object({
 });
 export type PublicSpaSection = z.infer<typeof PublicSpaSectionSchema>;
 
+export const PublicTestimonialSchema = z.object({
+  id: z.string().uuid(),
+  author_name: z.string(),
+  author_role: z.string().nullable().optional(),
+  text: z.string(),
+  avatar: PublicMediaSchema.nullable().optional(),
+  sort_order: z.number().int(),
+});
+export type PublicTestimonial = z.infer<typeof PublicTestimonialSchema>;
+export type PublicMediaDto = PublicMedia;
+
 export const PublicPageResponseSchema = z.object({
   page: PublicPageSchema,
   sections: z.array(PublicSpaSectionSchema),
+  testimonials: z.array(PublicTestimonialSchema),
 });
 export type PublicPageResponse = z.infer<typeof PublicPageResponseSchema>;
 
@@ -391,3 +403,83 @@ export const ContactResponseSchema = z.object({
   status: z.string().optional(),
 });
 export type ContactResponse = z.infer<typeof ContactResponseSchema>;
+
+// Admin Testimonials DTO Schemas & Types
+export const AdminTestimonialDtoSchema = z.object({
+  id: z.string().uuid(),
+  author_name: z.string(),
+  author_role: z.string().nullable().optional(),
+  text: z.string(),
+  avatar: AdminMediaDtoSchema.nullable().optional(),
+  sort_order: z.number().int(),
+  is_visible: z.boolean(),
+  created_at: z.string(),
+  updated_at: z.string(),
+});
+export type AdminTestimonialDto = z.infer<typeof AdminTestimonialDtoSchema>;
+export type AdminTestimonial = AdminTestimonialDto;
+
+export const CreateTestimonialRequestSchema = z.object({
+  author_name: z
+    .string()
+    .trim()
+    .min(1, "Author name is required")
+    .max(120, "Author name must not exceed 120 characters"),
+  author_role: z
+    .string()
+    .trim()
+    .max(160, "Author role must not exceed 160 characters")
+    .nullable()
+    .optional(),
+  text: z
+    .string()
+    .trim()
+    .min(1, "Review text is required")
+    .max(3000, "Review text must not exceed 3000 characters"),
+  avatar_media_id: z.string().uuid().nullable().optional(),
+  is_visible: z.boolean(),
+});
+export type CreateTestimonialRequest = z.infer<
+  typeof CreateTestimonialRequestSchema
+>;
+
+export const UpdateTestimonialRequestSchema = z.object({
+  author_name: z
+    .string()
+    .trim()
+    .min(1, "Author name is required")
+    .max(120, "Author name must not exceed 120 characters")
+    .optional(),
+  author_role: z
+    .string()
+    .trim()
+    .max(160, "Author role must not exceed 160 characters")
+    .nullable()
+    .optional(),
+  text: z
+    .string()
+    .trim()
+    .min(1, "Review text is required")
+    .max(3000, "Review text must not exceed 3000 characters")
+    .optional(),
+  avatar_media_id: z.string().uuid().nullable().optional(),
+  is_visible: z.boolean().optional(),
+});
+export type UpdateTestimonialRequest = z.infer<
+  typeof UpdateTestimonialRequestSchema
+>;
+
+export const ReorderTestimonialItemSchema = z.object({
+  id: z.string().uuid(),
+  sort_order: z.number().int(),
+});
+export type ReorderTestimonialItem = z.infer<
+  typeof ReorderTestimonialItemSchema
+>;
+
+export const ReorderTestimonialsRequestSchema = z.object({
+  items: z.array(ReorderTestimonialItemSchema),
+});
+export type ReorderTestimonialsRequest = z.infer<
+  typeof ReorderTestimonialsRequestSchema
+>;

@@ -68,5 +68,6 @@ export const validPublicPageResponse = {
         ],
       },
     ],
+    testimonials: [],
   },
 };
