@@ -404,6 +404,36 @@ export const ContactResponseSchema = z.object({
 });
 export type ContactResponse = z.infer<typeof ContactResponseSchema>;
 
+// Admin Contact Message Schemas & Types
+export const ContactEmailStatusSchema = z.enum([
+  "pending",
+  "sent",
+  "failed",
+  "disabled",
+]);
+export type ContactEmailStatus = z.infer<typeof ContactEmailStatusSchema>;
+
+export const AdminContactMessageDtoSchema = z.object({
+  id: z.string().uuid(),
+  name: z.string(),
+  email: z.string(),
+  subject: z.string().nullable().optional(),
+  message: z.string(),
+
+  email_status: ContactEmailStatusSchema,
+  email_error: z.string().nullable().optional(),
+  email_sent_at: z.string().nullable().optional(),
+
+  is_read: z.boolean(),
+  read_at: z.string().nullable().optional(),
+
+  created_at: z.string(),
+  updated_at: z.string(),
+});
+export type AdminContactMessageDto = z.infer<
+  typeof AdminContactMessageDtoSchema
+>;
+
 // Public Review Submission Schemas & Types
 export const CreatePublicTestimonialRequestSchema = z.object({
   author_name: z

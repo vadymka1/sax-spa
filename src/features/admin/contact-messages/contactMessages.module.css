@@ -1,0 +1,512 @@
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.5rem;
+  gap: 1rem;
+}
+
+.title {
+  margin: 0 0 0.25rem 0;
+  font-size: 1.65rem;
+  font-weight: 700;
+  color: var(--color-admin-text);
+  letter-spacing: -0.01em;
+}
+
+.subtitle {
+  margin: 0;
+  color: var(--color-admin-text-muted);
+  font-size: 0.95rem;
+}
+
+/* Tabs */
+.tabGroup {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-bottom: 1px solid var(--color-admin-border);
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.25rem;
+  flex-wrap: wrap;
+}
+
+.tabButton {
+  padding: 0.55rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border: none;
+  background: transparent;
+  color: var(--color-admin-text-muted);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.tabButton:hover:not(:disabled) {
+  color: var(--color-admin-text);
+}
+
+.activeTab {
+  color: var(--color-admin-primary) !important;
+  border-bottom-color: var(--color-admin-primary) !important;
+}
+
+.tabCount {
+  font-size: 0.75rem;
+  padding: 0.15rem 0.45rem;
+  border-radius: 9999px;
+  background: var(--color-admin-surface-secondary);
+  color: var(--color-admin-text-muted);
+}
+
+.activeTab .tabCount {
+  background: var(--color-admin-primary-soft);
+  color: var(--color-admin-primary);
+}
+
+/* Message List */
+.messagesList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.messageCard {
+  background: var(--color-admin-surface);
+  border: 1px solid var(--color-admin-border);
+  border-radius: var(--radius-md);
+  padding: 1.25rem 1.5rem;
+  box-shadow: var(--shadow-xs);
+  cursor: pointer;
+  transition:
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast),
+    background-color var(--transition-fast);
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  text-align: left;
+  width: 100%;
+}
+
+.messageCard:hover {
+  border-color: var(--color-admin-border-strong);
+  box-shadow: var(--shadow-sm);
+  background: var(--color-admin-surface);
+}
+
+.messageCard:focus-visible {
+  outline: 3px solid var(--color-admin-primary);
+  outline-offset: 2px;
+}
+
+.unreadCard {
+  border-left: 4px solid var(--color-admin-primary);
+  background: #fbfdff;
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.senderInfo {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+}
+
+.unreadDot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background-color: var(--color-admin-primary);
+  flex-shrink: 0;
+  display: inline-block;
+}
+
+.senderName {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--color-admin-text);
+}
+
+.readSenderName {
+  font-weight: 600;
+}
+
+.senderEmail {
+  font-size: 0.9rem;
+  color: var(--color-admin-text-muted);
+}
+
+.headerMeta {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+
+.receivedTime {
+  font-size: 0.85rem;
+  color: var(--color-admin-text-muted);
+}
+
+.subjectLine {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--color-admin-text);
+  margin: 0;
+}
+
+.readSubjectLine {
+  font-weight: 500;
+  color: var(--color-admin-text-muted);
+}
+
+.previewText {
+  font-size: 0.9rem;
+  color: var(--color-admin-text-muted);
+  line-height: 1.5;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.cardFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.25rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--color-admin-surface-secondary);
+}
+
+.badgesGroup {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+/* Status Badges */
+.statusBadge {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.2rem 0.55rem;
+  border-radius: var(--radius-xs);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.badgeUnread {
+  background: var(--color-admin-primary-soft);
+  color: var(--color-admin-primary);
+  border: 1px solid rgba(63, 100, 136, 0.25);
+}
+
+.badgeRead {
+  background: var(--color-admin-surface-secondary);
+  color: var(--color-admin-text-muted);
+  border: 1px solid var(--color-admin-border);
+}
+
+.deliveryBadgeSent {
+  background: var(--color-admin-success-soft);
+  color: var(--color-admin-success);
+  border: 1px solid rgba(62, 118, 93, 0.25);
+}
+
+.deliveryBadgeFailed {
+  background: var(--color-admin-danger-soft);
+  color: var(--color-admin-danger);
+  border: 1px solid var(--color-admin-danger-border);
+}
+
+.deliveryBadgePending {
+  background: var(--color-admin-warning-soft);
+  color: var(--color-admin-warning);
+  border: 1px solid rgba(149, 108, 45, 0.25);
+}
+
+.deliveryBadgeDisabled {
+  background: var(--color-admin-surface-secondary);
+  color: var(--color-admin-text-muted);
+  border: 1px solid var(--color-admin-border);
+}
+
+/* Empty State */
+.emptyState {
+  background: var(--color-admin-surface);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-xs);
+  border: 1px dashed var(--color-admin-border-strong);
+  padding: 3.5rem 1.5rem;
+  text-align: center;
+}
+
+.emptyTitle {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--color-admin-text);
+}
+
+.emptyDescription {
+  margin: 0;
+  color: var(--color-admin-text-muted);
+  font-size: 0.95rem;
+}
+
+/* Modal Styles */
+.modalBackdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.modal {
+  background: var(--color-admin-surface);
+  border-radius: var(--radius-lg);
+  width: 100%;
+  max-width: 640px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--color-admin-border);
+  overflow: hidden;
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem 1.75rem;
+  border-bottom: 1px solid var(--color-admin-border);
+}
+
+.modalTitle {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-admin-text);
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  line-height: 1;
+  color: var(--color-admin-text-muted);
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: var(--radius-xs);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.closeButton:hover:not(:disabled) {
+  color: var(--color-admin-text);
+}
+
+.modalBody {
+  padding: 1.5rem 1.75rem;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.detailMetaGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  background: var(--color-admin-bg);
+  padding: 1.1rem 1.25rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-admin-border);
+}
+
+.metaItem {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.metaLabel {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-admin-text-muted);
+}
+
+.metaValue {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--color-admin-text);
+  word-break: break-word;
+}
+
+.emailLink {
+  color: var(--color-admin-primary);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.emailLink:hover {
+  text-decoration: underline;
+  color: var(--color-admin-primary-hover);
+}
+
+.messageContentSection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.messageLabel {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--color-admin-text);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.messageText {
+  font-size: 0.95rem;
+  line-height: 1.65;
+  color: var(--color-admin-text);
+  background: #ffffff;
+  border: 1px solid var(--color-admin-border);
+  border-radius: var(--radius-sm);
+  padding: 1rem 1.25rem;
+  white-space: pre-wrap;
+  margin: 0;
+  min-height: 100px;
+}
+
+.emailErrorAlert {
+  padding: 0.85rem 1.1rem;
+  background-color: var(--color-admin-danger-soft);
+  border: 1px solid var(--color-admin-danger-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-admin-danger);
+  font-size: 0.875rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.emailErrorTitle {
+  font-weight: 700;
+}
+
+.emailErrorMessage {
+  font-family: var(--font-mono, monospace);
+  font-size: 0.8rem;
+  word-break: break-word;
+}
+
+.modalFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.75rem;
+  border-top: 1px solid var(--color-admin-border);
+  background: var(--color-admin-bg);
+  gap: 0.75rem;
+}
+
+.secondaryButton {
+  padding: 0.55rem 1.15rem;
+  background: var(--color-admin-surface);
+  border: 1px solid var(--color-admin-border);
+  color: var(--color-admin-text);
+  font-weight: 600;
+  font-size: 0.9rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.secondaryButton:hover:not(:disabled) {
+  background: var(--color-admin-surface-secondary);
+  border-color: var(--color-admin-border-strong);
+}
+
+.markUnreadButton {
+  padding: 0.55rem 1.15rem;
+  background: var(--color-admin-surface);
+  border: 1px solid var(--color-admin-primary);
+  color: var(--color-admin-primary);
+  font-weight: 600;
+  font-size: 0.9rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.markUnreadButton:hover:not(:disabled) {
+  background: var(--color-admin-primary-soft);
+}
+
+.markUnreadButton:disabled,
+.secondaryButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media (max-width: 640px) {
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .cardHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.35rem;
+  }
+
+  .headerMeta {
+    align-self: flex-start;
+  }
+
+  .modalFooter {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .modalFooter button {
+    width: 100%;
+    text-align: center;
+  }
+}
