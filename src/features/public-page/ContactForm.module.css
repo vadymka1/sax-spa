@@ -110,7 +110,7 @@
   font-weight: 600;
   letter-spacing: 0.03em;
   color: #fffcf8;
-  background-color: var(--color-public-primary);
+  background-color: var(--color-public-primary, #243a3a);
   border: 1px solid transparent;
   border-radius: var(--radius-sm);
   cursor: pointer;
@@ -122,7 +122,7 @@
 }
 
 .submitButton:hover:not(:disabled) {
-  background-color: #1a2c2c;
+  background-color: var(--color-public-primary-hover, #1a2c2c);
   transform: translateY(-1px);
   box-shadow: var(--shadow-md);
 }
@@ -172,8 +172,8 @@
   font-size: 0.9rem;
   font-weight: 500;
   background: transparent;
-  border: 1px solid var(--color-public-primary);
-  color: var(--color-public-primary);
+  border: 1px solid var(--color-public-primary, #243a3a);
+  color: var(--color-public-primary, #243a3a);
   border-radius: var(--radius-sm);
   cursor: pointer;
 }

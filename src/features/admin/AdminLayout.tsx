@@ -1,12 +1,15 @@
 import React, { useState } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/useAuth";
+import { useAdminContactMessages } from "./contact-messages/contactMessageQueries";
 import styles from "./adminLayout.module.css";
 
 export const AdminLayout: React.FC = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const { data: contactMessages } = useAdminContactMessages();
+  const unreadCount = contactMessages?.filter((m) => !m.is_read).length ?? 0;
 
   const handleLogout = async () => {
     if (isLoggingOut) {
@@ -60,6 +63,22 @@ export const AdminLayout: React.FC = () => {
               }
             >
               Testimonials
+            </NavLink>
+            <NavLink
+              to="/admin/contact-messages"
+              className={({ isActive }) =>
+                `${styles.navLink} ${isActive ? styles.activeNavLink : ""}`
+              }
+            >
+              Contact Messages
+              {unreadCount > 0 && (
+                <span
+                  className={styles.navUnreadBadge}
+                  aria-label={`${unreadCount} unread messages`}
+                >
+                  {unreadCount}
+                </span>
+              )}
             </NavLink>
             {user?.role === "super_admin" && (
               <NavLink

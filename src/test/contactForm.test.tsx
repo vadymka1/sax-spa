@@ -213,4 +213,69 @@ describe("ContactForm Component", () => {
     // Zero refresh attempts triggered
     expect(refreshCalls).toBe(0);
   });
+
+  it("ensures submit button is visible by default, has correct classes, and remains visible while submitting", async () => {
+    let resolveSubmit: (value: unknown) => void;
+    const submitPromise = new Promise((resolve) => {
+      resolveSubmit = resolve;
+    });
+
+    server.use(
+      http.post("http://localhost:8000/api/v1/public/contact", async () => {
+        await submitPromise;
+        return HttpResponse.json({ data: { success: true } });
+      }),
+    );
+
+    render(<ContactForm />);
+
+    const submitBtn = screen.getByRole("button", { name: "Send Message" });
+    // Button exists, is visible in default normal state, and enabled
+    expect(submitBtn).toBeInTheDocument();
+    expect(submitBtn).toBeVisible();
+    expect(submitBtn).toBeEnabled();
+    expect(submitBtn.className).toMatch(/submitButton/);
+
+    // Fill valid form
+    fireEvent.change(screen.getByLabelText(/Name/), {
+      target: { value: "Wayne Shorter" },
+    });
+    fireEvent.change(screen.getByLabelText(/Email/), {
+      target: { value: "wayne@example.com" },
+    });
+    fireEvent.change(screen.getByLabelText(/Message/), {
+      target: { value: "Looking forward to hearing the quartet perform live." },
+    });
+
+    // Click submit
+    fireEvent.click(submitBtn);
+
+    // Button transitions to submitting state: visibly disabled with loading text
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: "Sending..." })).toBeDisabled();
+    });
+    const sendingBtn = screen.getByRole("button", { name: "Sending..." });
+    expect(sendingBtn).toBeVisible();
+    expect(sendingBtn.className).toMatch(/submitButton/);
+
+    // Resolve submission
+    resolveSubmit!({ success: true });
+
+    // Success state reached
+    expect(
+      await screen.findByText(/Your message has been sent successfully/),
+    ).toBeInTheDocument();
+
+    // Reset via "Send another message" restores visible button
+    const resetBtn = screen.getByRole("button", {
+      name: "Send another message",
+    });
+    expect(resetBtn).toBeVisible();
+    expect(resetBtn.className).toMatch(/sendAnotherButton/);
+    fireEvent.click(resetBtn);
+
+    const restoredBtn = screen.getByRole("button", { name: "Send Message" });
+    expect(restoredBtn).toBeVisible();
+    expect(restoredBtn).toBeEnabled();
+  });
 });

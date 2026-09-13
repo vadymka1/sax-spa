@@ -60,6 +60,20 @@
   background-color: var(--color-admin-primary-soft);
 }
 
+.navUnreadBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.1rem 0.45rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  border-radius: 9999px;
+  background-color: var(--color-admin-primary);
+  color: #ffffff;
+  margin-left: 0.4rem;
+  line-height: 1.2;
+}
+
 .userNav {
   display: flex;
   align-items: center;
