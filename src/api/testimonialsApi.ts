@@ -92,4 +92,20 @@ export const testimonialsApi = {
       throw normalizeApiError(error);
     }
   },
+
+  async approveTestimonial(id: string): Promise<void> {
+    try {
+      await apiClient.post(`/api/v1/admin/testimonials/${id}/approve`);
+    } catch (error) {
+      throw normalizeApiError(error);
+    }
+  },
+
+  async rejectTestimonial(id: string): Promise<void> {
+    try {
+      await apiClient.post(`/api/v1/admin/testimonials/${id}/reject`);
+    } catch (error) {
+      throw normalizeApiError(error);
+    }
+  },
 };

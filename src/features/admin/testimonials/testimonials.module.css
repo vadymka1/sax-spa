@@ -224,6 +224,131 @@
   letter-spacing: 0.5px;
 }
 
+.statusBadgePending {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.2rem 0.5rem;
+  border-radius: var(--radius-sm);
+  background: #fff8e1;
+  color: #b78103;
+  border: 1px solid rgba(183, 129, 3, 0.3);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.statusBadgeRejected {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.2rem 0.5rem;
+  border-radius: var(--radius-sm);
+  background: var(--color-admin-danger-soft);
+  color: var(--color-admin-danger);
+  border: 1px solid var(--color-admin-danger-border);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.sourceBadge {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.2rem 0.5rem;
+  border-radius: var(--radius-sm);
+  background: var(--color-admin-surface-secondary);
+  color: var(--color-admin-text-muted);
+  border: 1px solid var(--color-admin-border);
+}
+
+.tabGroup {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-bottom: 1px solid var(--color-admin-border);
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.25rem;
+  flex-wrap: wrap;
+}
+
+.tabButton {
+  padding: 0.55rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border: none;
+  background: transparent;
+  color: var(--color-admin-text-muted);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.tabButton:hover:not(:disabled) {
+  color: var(--color-admin-text);
+}
+
+.activeTab {
+  color: var(--color-admin-primary) !important;
+  border-bottom-color: var(--color-admin-primary) !important;
+}
+
+.tabCount {
+  font-size: 0.75rem;
+  padding: 0.15rem 0.45rem;
+  border-radius: 9999px;
+  background: var(--color-admin-surface-secondary);
+  color: var(--color-admin-text-muted);
+}
+
+.activeTab .tabCount {
+  background: var(--color-admin-primary-soft);
+  color: var(--color-admin-primary);
+}
+
+.approveButton {
+  padding: 0.4rem 0.85rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(62, 118, 93, 0.3);
+  background: var(--color-admin-success-soft);
+  color: var(--color-admin-success);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.approveButton:hover:not(:disabled) {
+  background: var(--color-admin-success);
+  color: #ffffff;
+}
+
+.approveButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.rejectButton {
+  padding: 0.4rem 0.85rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-admin-danger-border);
+  background: var(--color-admin-danger-soft);
+  color: var(--color-admin-danger);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.rejectButton:hover:not(:disabled) {
+  background: var(--color-admin-danger);
+  color: #ffffff;
+}
+
+.rejectButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .textPreview {
   margin: 0;
   font-size: 0.95rem;

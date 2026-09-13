@@ -243,7 +243,10 @@ export const TestimonialEditModal: React.FC<TestimonialEditModalProps> = ({
     if (avatarMediaIdToSend !== undefined) {
       payload.avatar_media_id = avatarMediaIdToSend;
     }
-    if (isVisible !== testimonial.is_visible) {
+    if (
+      testimonial.moderation_status === "approved" &&
+      isVisible !== testimonial.is_visible
+    ) {
       payload.is_visible = isVisible;
     }
 
@@ -475,18 +478,31 @@ export const TestimonialEditModal: React.FC<TestimonialEditModalProps> = ({
               )}
             </div>
 
-            <div className={styles.formGroup}>
-              <label className={styles.checkboxLabel}>
-                <input
-                  type="checkbox"
-                  className={styles.checkboxInput}
-                  checked={isVisible}
-                  onChange={(e) => setIsVisible(e.target.checked)}
-                  disabled={isSubmitting}
-                />
-                <span>Visible on public site</span>
-              </label>
-            </div>
+            {testimonial.moderation_status === "approved" ? (
+              <div className={styles.formGroup}>
+                <label className={styles.checkboxLabel}>
+                  <input
+                    type="checkbox"
+                    className={styles.checkboxInput}
+                    checked={isVisible}
+                    onChange={(e) => setIsVisible(e.target.checked)}
+                    disabled={isSubmitting}
+                  />
+                  <span>Visible on public site</span>
+                </label>
+              </div>
+            ) : (
+              <div className={styles.formGroup}>
+                <p
+                  className={styles.helperText}
+                  style={{ margin: 0, fontStyle: "italic" }}
+                >
+                  {testimonial.moderation_status === "pending"
+                    ? "Visibility becomes available after approval."
+                    : "Rejected testimonials cannot be published on the public site."}
+                </p>
+              </div>
+            )}
           </div>
 
           <div className={styles.modalFooter}>

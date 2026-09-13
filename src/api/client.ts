@@ -36,6 +36,7 @@ apiClient.interceptors.request.use(
     const url = config.url ?? "";
     const isPublic =
       url.includes("/api/v1/public/contact") ||
+      url.includes("/api/v1/public/testimonials") ||
       url.includes("/api/v1/public/page");
     if (!isPublic && accessTokenProvider) {
       const token = accessTokenProvider();
@@ -61,6 +62,7 @@ apiClient.interceptors.response.use(
         url.includes("/api/v1/auth/refresh") ||
         url.includes("/api/v1/auth/logout") ||
         url.includes("/api/v1/public/contact") ||
+        url.includes("/api/v1/public/testimonials") ||
         url.includes("/api/v1/public/page");
 
       if (

@@ -97,3 +97,35 @@ export function useReorderTestimonials(): UseMutationResult<
       testimonialsApi.reorderTestimonials(payload),
   });
 }
+
+export function useApproveTestimonial(): UseMutationResult<
+  void,
+  AppApiError,
+  string
+> {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => testimonialsApi.approveTestimonial(id),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: testimonialKeys.all,
+      });
+    },
+  });
+}
+
+export function useRejectTestimonial(): UseMutationResult<
+  void,
+  AppApiError,
+  string
+> {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => testimonialsApi.rejectTestimonial(id),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: testimonialKeys.all,
+      });
+    },
+  });
+}

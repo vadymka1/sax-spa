@@ -1,7 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { AdminTestimonialDto } from "../../../api/types";
 import {
   useAdminTestimonials,
+  useApproveTestimonial,
+  useRejectTestimonial,
   useReorderTestimonials,
   useUpdateTestimonial,
 } from "./testimonialQueries";
@@ -20,6 +22,8 @@ interface PendingReorderAnnouncement {
   label: string;
 }
 
+type ModerationTab = "pending" | "approved" | "rejected" | "all";
+
 export const TestimonialsPage: React.FC = () => {
   const {
     data: testimonials,
@@ -31,12 +35,23 @@ export const TestimonialsPage: React.FC = () => {
 
   const reorderMutation = useReorderTestimonials();
   const updateMutation = useUpdateTestimonial();
+  const approveMutation = useApproveTestimonial();
+  const rejectMutation = useRejectTestimonial();
+
+  const [activeTab, setActiveTab] = useState<ModerationTab>("pending");
+  const [hasInitializedTab, setHasInitializedTab] = useState(false);
 
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingTestimonial, setEditingTestimonial] =
     useState<AdminTestimonialDto | null>(null);
   const [deletingTestimonial, setDeletingTestimonial] =
     useState<AdminTestimonialDto | null>(null);
+
+  const [approvingId, setApprovingId] = useState<string | null>(null);
+  const [rejectingId, setRejectingId] = useState<string | null>(null);
+  const [moderationError, setModerationError] = useState<AppApiError | null>(
+    null,
+  );
 
   // Status & error states for reorder
   const [reorderStatus, setReorderStatus] = useState<string | null>(null);
@@ -52,6 +67,61 @@ export const TestimonialsPage: React.FC = () => {
   } | null>(null);
 
   const isReorderInFlight = reorderMutation.isPending || isConfirmingRefetch;
+
+  // Derive counts
+  const pendingCount = useMemo(
+    () =>
+      (testimonials ?? []).filter((t) => t.moderation_status === "pending")
+        .length,
+    [testimonials],
+  );
+  const approvedCount = useMemo(
+    () =>
+      (testimonials ?? []).filter((t) => t.moderation_status === "approved")
+        .length,
+    [testimonials],
+  );
+  const rejectedCount = useMemo(
+    () =>
+      (testimonials ?? []).filter((t) => t.moderation_status === "rejected")
+        .length,
+    [testimonials],
+  );
+  const allCount = (testimonials ?? []).length;
+
+  // Default tab: Pending if pending items exist, else Published (or All if published is empty)
+  useEffect(() => {
+    if (!hasInitializedTab && testimonials && testimonials.length > 0) {
+      if (pendingCount > 0) {
+        setActiveTab("pending");
+      } else if (approvedCount > 0) {
+        setActiveTab("approved");
+      } else {
+        setActiveTab("all");
+      }
+      setHasInitializedTab(true);
+    }
+  }, [testimonials, hasInitializedTab, pendingCount, approvedCount]);
+
+  const approvedTestimonials = useMemo(
+    () =>
+      (testimonials ?? []).filter((t) => t.moderation_status === "approved"),
+    [testimonials],
+  );
+
+  const displayedTestimonials = useMemo(() => {
+    if (!testimonials) return [];
+    if (activeTab === "pending") {
+      return testimonials.filter((t) => t.moderation_status === "pending");
+    }
+    if (activeTab === "approved") {
+      return testimonials.filter((t) => t.moderation_status === "approved");
+    }
+    if (activeTab === "rejected") {
+      return testimonials.filter((t) => t.moderation_status === "rejected");
+    }
+    return testimonials;
+  }, [testimonials, activeTab]);
 
   // Restore focus to reorder button after reorder completes
   useEffect(() => {
@@ -73,20 +143,25 @@ export const TestimonialsPage: React.FC = () => {
   }, [testimonials, isReorderInFlight, lastReorderedAction]);
 
   const handleMove = (
-    fromIndex: number,
-    toIndex: number,
+    movedTestimonial: AdminTestimonialDto,
     direction: "up" | "down",
   ) => {
     if (!testimonials || isReorderInFlight) return;
 
-    const items = buildReorderPayload(testimonials, fromIndex, toIndex);
+    // Strict Reorder Domain: Reordering only operates on approved testimonials
+    const fromIndex = approvedTestimonials.findIndex(
+      (t) => t.id === movedTestimonial.id,
+    );
+    if (fromIndex === -1) return;
+
+    const toIndex = direction === "up" ? fromIndex - 1 : fromIndex + 1;
+    if (toIndex < 0 || toIndex >= approvedTestimonials.length) return;
+
+    const items = buildReorderPayload(approvedTestimonials, fromIndex, toIndex);
     if (!items) {
       setReorderStatus("Unable to prepare testimonial order.");
       return;
     }
-
-    const movedTestimonial = testimonials[fromIndex];
-    if (!movedTestimonial) return;
 
     setReorderError(null);
     setConfirmationError(null);
@@ -120,14 +195,17 @@ export const TestimonialsPage: React.FC = () => {
               );
             } else {
               const fresh = refetchResult.data;
-              const canonicalIndex = fresh.findIndex(
+              const freshApproved = fresh.filter(
+                (t) => t.moderation_status === "approved",
+              );
+              const canonicalIndex = freshApproved.findIndex(
                 (t) => t.id === movedTestimonial.id,
               );
               if (canonicalIndex >= 0) {
                 setReorderStatus(
                   `Moved "${label}" to position ${
                     canonicalIndex + 1
-                  } of ${fresh.length}.`,
+                  } of ${freshApproved.length}.`,
                 );
               } else {
                 setReorderStatus("Testimonial order saved.");
@@ -170,15 +248,18 @@ export const TestimonialsPage: React.FC = () => {
         });
       } else {
         const fresh = refetchResult.data;
+        const freshApproved = fresh.filter(
+          (t) => t.moderation_status === "approved",
+        );
         if (pendingAnnouncement) {
-          const canonicalIndex = fresh.findIndex(
+          const canonicalIndex = freshApproved.findIndex(
             (t) => t.id === pendingAnnouncement.testimonialId,
           );
           if (canonicalIndex >= 0) {
             setReorderStatus(
               `Moved "${pendingAnnouncement.label}" to position ${
                 canonicalIndex + 1
-              } of ${fresh.length}.`,
+              } of ${freshApproved.length}.`,
             );
           } else {
             setReorderStatus("Latest testimonial order loaded.");
@@ -201,7 +282,13 @@ export const TestimonialsPage: React.FC = () => {
   };
 
   const handleToggleVisibility = async (testimonial: AdminTestimonialDto) => {
-    if (updateMutation.isPending || isReorderInFlight) return;
+    if (
+      testimonial.moderation_status !== "approved" ||
+      updateMutation.isPending ||
+      isReorderInFlight
+    ) {
+      return;
+    }
 
     try {
       await updateMutation.mutateAsync({
@@ -212,6 +299,32 @@ export const TestimonialsPage: React.FC = () => {
       });
     } catch {
       // Handled by updateMutation.error
+    }
+  };
+
+  const handleApprove = async (testimonial: AdminTestimonialDto) => {
+    if (approvingId || rejectingId || isReorderInFlight) return;
+    setApprovingId(testimonial.id);
+    setModerationError(null);
+    try {
+      await approveMutation.mutateAsync(testimonial.id);
+    } catch (err) {
+      setModerationError(normalizeApiError(err));
+    } finally {
+      setApprovingId(null);
+    }
+  };
+
+  const handleReject = async (testimonial: AdminTestimonialDto) => {
+    if (approvingId || rejectingId || isReorderInFlight) return;
+    setRejectingId(testimonial.id);
+    setModerationError(null);
+    try {
+      await rejectMutation.mutateAsync(testimonial.id);
+    } catch (err) {
+      setModerationError(normalizeApiError(err));
+    } finally {
+      setRejectingId(null);
     }
   };
 
@@ -258,6 +371,42 @@ export const TestimonialsPage: React.FC = () => {
         </button>
       </header>
 
+      {/* Filter Tabs */}
+      <nav className={styles.tabGroup} aria-label="Moderation status filter">
+        <button
+          type="button"
+          className={`${styles.tabButton} ${activeTab === "pending" ? styles.activeTab : ""}`}
+          onClick={() => setActiveTab("pending")}
+          aria-current={activeTab === "pending" ? "page" : undefined}
+        >
+          Pending <span className={styles.tabCount}>({pendingCount})</span>
+        </button>
+        <button
+          type="button"
+          className={`${styles.tabButton} ${activeTab === "approved" ? styles.activeTab : ""}`}
+          onClick={() => setActiveTab("approved")}
+          aria-current={activeTab === "approved" ? "page" : undefined}
+        >
+          Published <span className={styles.tabCount}>({approvedCount})</span>
+        </button>
+        <button
+          type="button"
+          className={`${styles.tabButton} ${activeTab === "rejected" ? styles.activeTab : ""}`}
+          onClick={() => setActiveTab("rejected")}
+          aria-current={activeTab === "rejected" ? "page" : undefined}
+        >
+          Rejected <span className={styles.tabCount}>({rejectedCount})</span>
+        </button>
+        <button
+          type="button"
+          className={`${styles.tabButton} ${activeTab === "all" ? styles.activeTab : ""}`}
+          onClick={() => setActiveTab("all")}
+          aria-current={activeTab === "all" ? "page" : undefined}
+        >
+          All <span className={styles.tabCount}>({allCount})</span>
+        </button>
+      </nav>
+
       {/* Reorder status announcement for screen readers */}
       <div
         role="status"
@@ -273,6 +422,15 @@ export const TestimonialsPage: React.FC = () => {
           <ErrorMessage
             error={reorderError}
             onRetry={() => setReorderError(null)}
+          />
+        </div>
+      )}
+
+      {moderationError && (
+        <div style={{ marginBottom: "1rem" }}>
+          <ErrorMessage
+            error={moderationError}
+            onRetry={() => setModerationError(null)}
           />
         </div>
       )}
@@ -308,14 +466,19 @@ export const TestimonialsPage: React.FC = () => {
       )}
 
       <TestimonialsList
-        testimonials={testimonials}
+        testimonials={displayedTestimonials}
+        approvedTestimonials={approvedTestimonials}
         onEdit={(item) => setEditingTestimonial(item)}
         onDelete={(item) => setDeletingTestimonial(item)}
         onToggleVisibility={handleToggleVisibility}
-        onMoveUp={(index) => handleMove(index, index - 1, "up")}
-        onMoveDown={(index) => handleMove(index, index + 1, "down")}
+        onApprove={handleApprove}
+        onReject={handleReject}
+        onMoveUp={(item) => handleMove(item, "up")}
+        onMoveDown={(item) => handleMove(item, "down")}
         isReordering={isReorderInFlight}
         isUpdatingVisibility={updateMutation.isPending}
+        isApprovingId={approvingId}
+        isRejectingId={rejectingId}
         onOpenCreateModal={() => setIsCreateOpen(true)}
       />
 

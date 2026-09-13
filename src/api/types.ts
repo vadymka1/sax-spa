@@ -404,7 +404,51 @@ export const ContactResponseSchema = z.object({
 });
 export type ContactResponse = z.infer<typeof ContactResponseSchema>;
 
+// Public Review Submission Schemas & Types
+export const CreatePublicTestimonialRequestSchema = z.object({
+  author_name: z
+    .string()
+    .trim()
+    .min(1, "Name is required")
+    .max(120, "Name must not exceed 120 characters"),
+  author_role: z
+    .string()
+    .trim()
+    .max(160, "Role/company must not exceed 160 characters")
+    .optional(),
+  text: z
+    .string()
+    .trim()
+    .min(1, "Review is required")
+    .max(3000, "Review must not exceed 3000 characters"),
+});
+export type CreatePublicTestimonialRequest = z.infer<
+  typeof CreatePublicTestimonialRequestSchema
+>;
+
+export const PublicTestimonialSubmissionResponseSchema = z.object({
+  id: z.string().uuid(),
+  status: z.literal("pending"),
+});
+export type PublicTestimonialSubmissionResponse = z.infer<
+  typeof PublicTestimonialSubmissionResponseSchema
+>;
+
 // Admin Testimonials DTO Schemas & Types
+export const TestimonialModerationStatusSchema = z.enum([
+  "pending",
+  "approved",
+  "rejected",
+]);
+export type TestimonialModerationStatus = z.infer<
+  typeof TestimonialModerationStatusSchema
+>;
+
+export const TestimonialSubmissionSourceSchema = z.enum(["admin", "public"]);
+export type TestimonialSubmissionSource = z.infer<
+  typeof TestimonialSubmissionSourceSchema
+>;
+
 export const AdminTestimonialDtoSchema = z.object({
   id: z.string().uuid(),
   author_name: z.string(),
@@ -413,6 +457,8 @@ export const AdminTestimonialDtoSchema = z.object({
   avatar: AdminMediaDtoSchema.nullable().optional(),
   sort_order: z.number().int(),
   is_visible: z.boolean(),
+  moderation_status: TestimonialModerationStatusSchema,
+  submission_source: TestimonialSubmissionSourceSchema,
   created_at: z.string(),
   updated_at: z.string(),
 });

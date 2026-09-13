@@ -6,6 +6,7 @@ import {
 } from "../../api/types";
 import { ContactForm } from "./ContactForm";
 import { ContentBlockRenderer } from "./ContentBlockRenderer";
+import { LeaveReviewForm } from "./LeaveReviewForm";
 import { TestimonialCarousel } from "./TestimonialCarousel";
 import styles from "./PublicSection.module.css";
 
@@ -35,7 +36,10 @@ export const PublicSection: React.FC<PublicSectionProps> = ({
 
       {isContactSection && <ContactForm />}
       {isTestimonialsSection && (
-        <TestimonialCarousel testimonials={testimonials} />
+        <>
+          <TestimonialCarousel testimonials={testimonials} />
+          <LeaveReviewForm />
+        </>
       )}
     </section>
   );

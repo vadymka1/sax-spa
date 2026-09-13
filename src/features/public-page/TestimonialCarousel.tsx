@@ -54,17 +54,24 @@ export function TestimonialCarousel({
     );
   }
 
-  const current = testimonials[currentIndex] ?? testimonials[0];
+  const safeIndex = currentIndex >= total ? 0 : currentIndex;
+  const current = testimonials[safeIndex] ?? testimonials[0];
   if (!current) return null;
 
   const initial = current.author_name.charAt(0).toUpperCase() || "T";
 
   const goToPrevious = () => {
-    setCurrentIndex((prev) => (prev === 0 ? total - 1 : prev - 1));
+    setCurrentIndex((prev) => {
+      const active = prev >= total ? 0 : prev;
+      return active === 0 ? total - 1 : active - 1;
+    });
   };
 
   const goToNext = () => {
-    setCurrentIndex((prev) => (prev === total - 1 ? 0 : prev + 1));
+    setCurrentIndex((prev) => {
+      const active = prev >= total ? 0 : prev;
+      return active === total - 1 ? 0 : active + 1;
+    });
   };
 
   const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
@@ -119,7 +126,7 @@ export function TestimonialCarousel({
           aria-live="polite"
           aria-atomic="true"
         >
-          {currentIndex + 1} / {total}
+          {safeIndex + 1} / {total}
         </div>
 
         <div className={styles.navButtonGroup}>
