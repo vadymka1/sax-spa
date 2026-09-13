@@ -11,7 +11,6 @@ export const PublicPage: React.FC = () => {
   const { data, isLoading, isError, error, refetch } = usePublicPage();
 
   const pageTitle = data?.page.title;
-  const sections = data?.sections;
 
   // Update browser document.title with backend page title
   useEffect(() => {
@@ -20,9 +19,14 @@ export const PublicPage: React.FC = () => {
     }
   }, [pageTitle]);
 
+  const sortedSections = useMemo(() => {
+    if (!data?.sections) return [];
+    return [...data.sections].sort((a, b) => a.sort_order - b.sort_order);
+  }, [data?.sections]);
+
   const sectionKeys = useMemo(
-    () => sections?.map((section) => section.key) ?? [],
-    [sections],
+    () => sortedSections.map((section) => section.key),
+    [sortedSections],
   );
 
   const activeSectionKey = useActiveSection(sectionKeys);
@@ -50,13 +54,13 @@ export const PublicPage: React.FC = () => {
     <div className={styles.pageWrapper}>
       <PublicHeader
         siteTitle={data.page.title}
-        sections={data.sections}
+        sections={sortedSections}
         activeSectionKey={activeSectionKey}
       />
 
       <main id="top" className={styles.mainContent}>
-        {data.sections.length > 0 ? (
-          data.sections.map((section) => (
+        {sortedSections.length > 0 ? (
+          sortedSections.map((section) => (
             <PublicSection
               key={section.id}
               section={section}

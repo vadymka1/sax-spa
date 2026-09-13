@@ -13,6 +13,11 @@ export const SpaSectionsPage: React.FC = () => {
   const { data: sections, isLoading, error, refetch } = useAdminSpaSections();
   const createSectionButtonRef = useRef<HTMLButtonElement | null>(null);
 
+  const sortedSections = React.useMemo(() => {
+    if (!sections) return [];
+    return [...sections].sort((a, b) => a.sort_order - b.sort_order);
+  }, [sections]);
+
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingSection, setEditingSection] =
     useState<AdminSpaSectionDto | null>(null);
@@ -67,9 +72,9 @@ export const SpaSectionsPage: React.FC = () => {
         </div>
       )}
 
-      {!isLoading && !error && sections && sections.length > 0 && (
+      {!isLoading && !error && sortedSections.length > 0 && (
         <SpaSectionsList
-          sections={sections}
+          sections={sortedSections}
           onEdit={(section) => setEditingSection(section)}
           onDelete={(section) => setDeletingSection(section)}
         />
