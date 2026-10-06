@@ -80,7 +80,7 @@ const mockTallBlock: AdminContentBlockDto = {
 
 describe("FRONTEND AUDIT — ContentBlock Modal Structure & Footer Access", () => {
   beforeEach(() => {
-    authSession.setTokens("mock-access-token", "mock-refresh-token");
+    authSession.setAccessToken("mock-access-token");
     authSession.resetCheckedState();
     server.use(
       http.get(`${env.apiBaseUrl}/api/v1/auth/me`, () => {

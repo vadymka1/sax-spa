@@ -138,40 +138,27 @@ export const UserDtoSchema = z.object({
 });
 export type UserDto = z.infer<typeof UserDtoSchema>;
 
-export const AuthTokensDtoSchema = z.object({
-  access_token: z.string().min(1),
-  refresh_token: z.string().min(1),
-  token_type: z.string(),
-  expires_in: z.number().int(),
-  user: UserDtoSchema,
-});
-export type AuthTokensDto = z.infer<typeof AuthTokensDtoSchema>;
+export const AuthResponseDtoSchema = z
+  .object({
+    access_token: z.string().min(1),
+    token_type: z.string(),
+    expires_in: z.number().int(),
+    user: UserDtoSchema,
+  })
+  .strict();
+export type AuthResponseDto = z.infer<typeof AuthResponseDtoSchema>;
+
+export const LoginResponseDtoSchema = AuthResponseDtoSchema;
+export type LoginResponseDto = AuthResponseDto;
+
+export const RefreshResponseDtoSchema = AuthResponseDtoSchema;
+export type RefreshResponseDto = AuthResponseDto;
 
 export const LoginRequestSchema = z.object({
   email: z.string().email(),
   password: z.string(),
 });
 export type LoginRequest = z.infer<typeof LoginRequestSchema>;
-
-export const RefreshTokenResponseDtoSchema = z.object({
-  access_token: z.string().min(1),
-  refresh_token: z.string().min(1),
-  token_type: z.string(),
-  expires_in: z.number().int(),
-});
-export type RefreshTokenResponseDto = z.infer<
-  typeof RefreshTokenResponseDtoSchema
->;
-
-export const RefreshTokenRequestSchema = z.object({
-  refresh_token: z.string().min(1),
-});
-export type RefreshTokenRequest = z.infer<typeof RefreshTokenRequestSchema>;
-
-export const LogoutRequestSchema = z.object({
-  refresh_token: z.string().min(1),
-});
-export type LogoutRequest = z.infer<typeof LogoutRequestSchema>;
 
 export const PASSWORD_MIN_LENGTH = 6;
 

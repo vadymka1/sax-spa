@@ -83,7 +83,7 @@ const mockInitialBlock: AdminContentBlockDto = {
 
 describe("FRONTEND V2.1 — Multi-Image Hardening & Type-Safe Form Boundaries", () => {
   beforeEach(() => {
-    authSession.setTokens("mock-access-token", "mock-refresh-token");
+    authSession.setAccessToken("mock-access-token");
     authSession.resetCheckedState();
     server.use(
       http.get(`${env.apiBaseUrl}/api/v1/auth/me`, () => {

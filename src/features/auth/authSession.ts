@@ -1,10 +1,11 @@
 import { authApi } from "../../api/authApi";
+import { UserDto } from "../../api/types";
 
 type AuthFailureListener = () => void;
 
 class AuthSession {
   private accessToken: string | null = null;
-  private refreshToken: string | null = null;
+  private restoredUser: UserDto | null = null;
   private sessionGeneration = 0;
   private refreshPromise: Promise<string> | null = null;
   private hasCheckedSession = false;
@@ -14,13 +15,12 @@ class AuthSession {
     return this.accessToken;
   }
 
-  getRefreshToken(): string | null {
-    return this.refreshToken;
+  getRestoredUser(): UserDto | null {
+    return this.restoredUser;
   }
 
-  setTokens(access: string | null, refresh: string | null): void {
+  setAccessToken(access: string | null): void {
     this.accessToken = access;
-    this.refreshToken = refresh;
   }
 
   hasChecked(): boolean {
@@ -37,7 +37,7 @@ class AuthSession {
 
   clearSession(): void {
     this.accessToken = null;
-    this.refreshToken = null;
+    this.restoredUser = null;
     this.sessionGeneration += 1;
     this.refreshPromise = null;
     this.hasCheckedSession = true;
@@ -62,12 +62,6 @@ class AuthSession {
   }
 
   getOrStartRefresh(): Promise<string> {
-    const refreshToken = this.getRefreshToken();
-    if (!refreshToken) {
-      this.clearSession();
-      return Promise.reject(new Error("No refresh token available"));
-    }
-
     if (this.refreshPromise) {
       return this.refreshPromise;
     }
@@ -76,12 +70,10 @@ class AuthSession {
 
     this.refreshPromise = (async () => {
       try {
-        const data = await authApi.refresh(refreshToken);
+        const data = await authApi.refresh();
         if (this.sessionGeneration === currentGeneration) {
           this.accessToken = data.access_token;
-          if (data.refresh_token) {
-            this.refreshToken = data.refresh_token;
-          }
+          this.restoredUser = data.user;
           this.hasCheckedSession = true;
           return data.access_token;
         }

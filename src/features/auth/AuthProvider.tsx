@@ -17,7 +17,12 @@ interface AuthProviderProps {
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<UserDto | null>(null);
-  const [status, setStatus] = useState<AuthStatus>("unauthenticated");
+  const [status, setStatus] = useState<AuthStatus>(() => {
+    if (authSession.hasChecked()) {
+      return authSession.getAccessToken() ? "authenticated" : "unauthenticated";
+    }
+    return "checking";
+  });
   const [, setSessionCheckCount] = useState(0);
   const checkSessionPromiseRef = useRef<Promise<void> | null>(null);
 
@@ -26,44 +31,25 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setSessionCheckCount((c) => c + 1);
   }, []);
 
-  useEffect(() => {
-    setAccessTokenProvider(() => authSession.getAccessToken());
-    setRefreshHandler(() => authSession.getOrStartRefresh());
-
-    const unsubscribe = authSession.onAuthFailure(() => {
-      setUser(null);
-      setStatus("unauthenticated");
-      setSessionCheckCount((c) => c + 1);
-    });
-
-    return () => {
-      unsubscribe();
-    };
-  }, []);
-
   const checkSession = useCallback(async () => {
-    if (!authSession.getAccessToken() && !authSession.getRefreshToken()) {
-      authSession.clearSession();
-      setUser(null);
-      setStatus("unauthenticated");
-      notifySessionChecked();
-      return;
-    }
-
     setStatus("checking");
     try {
+      let currentUser = user;
       if (!authSession.getAccessToken()) {
         await authSession.getOrStartRefresh();
+        currentUser = authSession.getRestoredUser();
       }
-      const me = await authApi.getMe();
-      if (!me.is_active) {
+      if (!currentUser) {
+        currentUser = await authApi.getMe();
+      }
+      if (!currentUser.is_active) {
         authSession.clearSession();
         setUser(null);
         setStatus("unauthenticated");
         notifySessionChecked();
         return;
       }
-      setUser(me);
+      setUser(currentUser);
       setStatus("authenticated");
       notifySessionChecked();
     } catch {
@@ -72,7 +58,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setStatus("unauthenticated");
       notifySessionChecked();
     }
-  }, [notifySessionChecked]);
+  }, [user, notifySessionChecked]);
 
   const ensureSessionChecked = useCallback(async () => {
     if (authSession.hasChecked()) {
@@ -89,16 +75,31 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     return checkSessionPromiseRef.current;
   }, [checkSession]);
 
+  useEffect(() => {
+    setAccessTokenProvider(() => authSession.getAccessToken());
+    setRefreshHandler(() => authSession.getOrStartRefresh());
+
+    const unsubscribe = authSession.onAuthFailure(() => {
+      setUser(null);
+      setStatus("unauthenticated");
+      setSessionCheckCount((c) => c + 1);
+    });
+
+    if (!authSession.hasChecked()) {
+      void ensureSessionChecked();
+    }
+
+    return () => {
+      unsubscribe();
+    };
+  }, [ensureSessionChecked]);
+
   const login = useCallback(
     async (credentials: LoginRequest) => {
-      const tokens = await authApi.login(credentials);
-      authSession.setTokens(tokens.access_token, tokens.refresh_token);
+      const data = await authApi.login(credentials);
+      authSession.setAccessToken(data.access_token);
 
-      let loggedInUser = tokens.user;
-      if (!loggedInUser) {
-        loggedInUser = await authApi.getMe();
-      }
-
+      const loggedInUser = data.user;
       if (!loggedInUser.is_active) {
         authSession.clearSession();
         setUser(null);
@@ -115,11 +116,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   );
 
   const logout = useCallback(async () => {
-    const refreshToken = authSession.getRefreshToken();
     try {
-      if (refreshToken) {
-        await authApi.logout(refreshToken);
-      }
+      await authApi.logout();
     } finally {
       authSession.clearSession();
       setUser(null);
