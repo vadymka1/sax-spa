@@ -1,44 +1,45 @@
 import { apiClient } from "./client";
 import { normalizeApiError } from "./errors";
 import {
-  AuthTokensDto,
-  AuthTokensDtoSchema,
+  AuthResponseDto,
+  AuthResponseDtoSchema,
   LoginRequest,
-  RefreshTokenResponseDto,
-  RefreshTokenResponseDtoSchema,
   UserDto,
   UserDtoSchema,
   ApiResponse,
 } from "./types";
 
 export const authApi = {
-  async login(payload: LoginRequest): Promise<AuthTokensDto> {
+  async login(payload: LoginRequest): Promise<AuthResponseDto> {
     try {
-      const response = await apiClient.post<ApiResponse<AuthTokensDto>>(
+      const response = await apiClient.post<ApiResponse<AuthResponseDto>>(
         "/api/v1/auth/login",
         payload,
+        { withCredentials: true },
       );
-      return AuthTokensDtoSchema.parse(response.data.data);
+      return AuthResponseDtoSchema.parse(response.data.data);
     } catch (error) {
       throw normalizeApiError(error);
     }
   },
 
-  async refresh(refreshToken: string): Promise<RefreshTokenResponseDto> {
+  async refresh(): Promise<AuthResponseDto> {
     try {
-      const response = await apiClient.post<
-        ApiResponse<RefreshTokenResponseDto>
-      >("/api/v1/auth/refresh", { refresh_token: refreshToken });
-      return RefreshTokenResponseDtoSchema.parse(response.data.data);
+      const response = await apiClient.post<ApiResponse<AuthResponseDto>>(
+        "/api/v1/auth/refresh",
+        undefined,
+        { withCredentials: true },
+      );
+      return AuthResponseDtoSchema.parse(response.data.data);
     } catch (error) {
       throw normalizeApiError(error);
     }
   },
 
-  async logout(refreshToken: string): Promise<void> {
+  async logout(): Promise<void> {
     try {
-      await apiClient.post("/api/v1/auth/logout", {
-        refresh_token: refreshToken,
+      await apiClient.post("/api/v1/auth/logout", undefined, {
+        withCredentials: true,
       });
     } catch (error) {
       throw normalizeApiError(error);

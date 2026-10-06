@@ -44,4 +44,15 @@ export const handlers = [
       data: [],
     });
   }),
+  http.post("http://localhost:8000/api/v1/auth/refresh", () => {
+    return HttpResponse.json(
+      { error: { code: "UNAUTHORIZED", message: "No refresh session" } },
+      { status: 401 },
+    );
+  }),
+  http.post("http://localhost:8000/api/v1/auth/logout", () => {
+    return HttpResponse.json({
+      data: { message: "Successfully logged out" },
+    });
+  }),
 ];

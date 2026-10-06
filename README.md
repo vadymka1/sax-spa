@@ -7,9 +7,9 @@ Frontend single-page application and Admin CMS for the SPA Saxophone Ensemble pr
 - **F1 Baseline & API Foundation**: Strict environment configuration, Axios client with JWT interceptor, Zod DTO contracts, TanStack Query integration, MSW 2.x API mocking, and native transport file upload handling.
 - **F2 Public SPA Shell & Dynamic Navigation**: Real public page shell driven by `GET /api/v1/public/page`, dynamic navigation generated from `SpaSection` records, dynamic anchor linking (`#section.key`), sticky header, mobile hamburger navigation, `IntersectionObserver` active section tracking (`aria-current="location"`), loading/error/empty state handling, and accessible UI baseline.
 - **F3 Public ContentBlock Renderers & Media**: Dedicated visitor-facing renderers for all four backend block types (`text`, `text_image`, `text_video`, `text_youtube`). Directly consumes backend-provided media URLs with native HTML image lazy loading, HTML5 native video (with user controls, metadata preload, no autoplay), and responsive 16:9 YouTube iframe embeds. Preserves single grouped API request (`GET /api/v1/public/page`).
-- **F4 Admin Authentication & Protected Layout**: Private admin authentication flow using frozen backend endpoints (`POST /api/v1/auth/login`, `POST /api/v1/auth/refresh`, `POST /api/v1/auth/logout`, `GET /api/v1/auth/me`). In-memory token storage (`authSession.ts`), single-flight 401 refresh deduplication with automatic retry-once, protected routing (`/admin/*`), double-submit protection, and protected admin layout shell.
-- **F4.1 Admin-Only Session Bootstrap & Auth Contract Alignment**: Decoupled public SPA route `/` from auth bootstrap (0 `/auth/refresh` calls on visitor load). Session restoration is scoped strictly to `/admin/*` via idempotent `ensureSessionChecked()`. Aligned frontend auth DTOs with the frozen Rust/Rocket backend contract (**CONTRACT B — Explicit JSON Body Refresh Token**), using explicit `{ refresh_token }` JSON body payload exchange in `authApi.refresh()` and `authApi.logout()`.
-- **F4.2 Honest Contract-B Session Model**: Strict in-memory authentication lifecycle. The frozen Rust/Rocket backend returns refresh tokens in JSON response bodies and requires them in refresh/logout request bodies (Contract B). Tokens are kept in JavaScript memory only (`authSession.ts`); no tokens are ever stored in `localStorage`, `sessionStorage`, `IndexedDB`, or cookies. Active session state survives client-side SPA navigation, but a full browser reload destroys memory state and requires signing in again.
+- **F4 Admin Authentication & Protected Layout**: Private admin authentication flow using backend endpoints (`POST /api/v1/auth/login`, `POST /api/v1/auth/refresh`, `POST /api/v1/auth/logout`, `GET /api/v1/auth/me`). In-memory access token storage (`authSession.ts`), single-flight 401 refresh deduplication with automatic retry-once, protected routing (`/admin/*`), double-submit protection, and protected admin layout shell.
+- **F4.1 Auth Contract C Alignment & Scoped Session Bootstrap**: Decoupled public SPA route `/` from auth bootstrap (0 `/auth/refresh` calls on visitor load). Session restoration is scoped strictly to `/admin/*` via idempotent `ensureSessionChecked()`. Aligned frontend with **Auth Contract C — HttpOnly Refresh Cookie Session**, sending `withCredentials: true` with empty request bodies for `/auth/refresh` and `/auth/logout`.
+- **F4.2 Persistent Admin Session Restore & Memory-Only Access Token Model**: Robust in-memory access token lifecycle paired with Secure HttpOnly cookie refresh. Access tokens are kept strictly in JavaScript memory (`authSession.ts`) and never stored in `localStorage`, `sessionStorage`, `IndexedDB`, or client-accessible cookies. When an administrator reloads the browser (F5), `AuthProvider` transitions to `checking` state and automatically restores the session via cookie-based `/auth/refresh`, eliminating session loss while keeping tokens safe from XSS exfiltration.
 - **F5 Admin SpaSection Management**: SpaSection CRUD operations (`GET`, `POST`, `PATCH`, `DELETE`, `POST /reorder`). Focus management, deterministic dialog accessibility (`role="dialog"`, `aria-modal="true"`, focus trap, Escape key closing), and backend order preservation.
 - **F6 Admin ContentBlock Management + Media + Strict Boundaries**: ContentBlock CRUD with section selector filter, block-type selection, media upload (`image`, `video`), YouTube creation, strict media schema discrimination, and no media delete cascading.
 - **F7 ContentBlock Reorder & Canonical Confirmation**: Admin reordering of ContentBlocks via `POST /api/v1/admin/spa-sections/{id}/content-blocks/reorder`. Canonical GET confirmation handshake, recoverable error banners with request ID, GET-only Retry mechanism, section-scoped confirmation locking, and aria-live announcements.
@@ -105,11 +105,74 @@ Verify endpoints:
 
 ## Security & Architectural Guarantees
 
-1. **Authentication (Contract B)**: Access and refresh tokens are kept strictly in JavaScript memory (`authSession.ts`). Zero token persistence in `localStorage`, `sessionStorage`, `IndexedDB`, or cookies. Full browser reloads clear session state as required by Contract B.
+1. **Authentication (Auth Contract C — HttpOnly Cookie Session)**: Access tokens are kept strictly in JavaScript memory (`authSession.ts`). Refresh tokens are stored exclusively by the backend in a Secure HttpOnly cookie (`SameSite=Lax`, `Path=/api/v1/auth`), completely inaccessible to JavaScript (`document.cookie` cannot access it). Zero credential persistence in `localStorage`, `sessionStorage`, or `IndexedDB`. Full browser reloads (F5) automatically restore session state via credentialed refresh without requiring administrators to sign in again.
 2. **Zero Inventions**: All `sort_order` and `key` values are generated exclusively by the backend.
 3. **Canonical Handshake**: ContentBlock reorder POST requires explicit canonical GET fetch confirmation before announcing updated position.
 4. **Strict Media Discrimination**: Media payload responses undergo strict Zod schema validation matching expected media type (`image`, `video`, `youtube`).
 5. **No HTML Injection**: Zero usage of `dangerouslySetInnerHTML`, raw HTML string injection, or unvalidated iframes.
+
+## Authentication Architecture — Auth Contract C
+
+The frontend implements **Auth Contract C — HttpOnly Refresh Cookie Session**:
+
+### 1. Token Distribution & Storage Boundaries
+
+- **Access Token**:
+  - Returned in JSON payload on `POST /api/v1/auth/login` and `POST /api/v1/auth/refresh` (`access_token`, `token_type`, `expires_in`, `user`).
+  - Stored strictly in JavaScript memory (`src/features/auth/authSession.ts`).
+  - Attached via Axios request interceptor as `Authorization: Bearer <access_token>` for protected administrative requests.
+  - Never persisted to `localStorage`, `sessionStorage`, `IndexedDB`, or client-accessible cookies.
+- **Refresh Token**:
+  - Managed exclusively by the backend via a `Secure`, `HttpOnly`, `SameSite=Lax` cookie scoped to `/api/v1/auth`.
+  - Inaccessible to client JavaScript (`document.cookie` cannot read or modify it).
+  - Never serialized in frontend-visible JSON response bodies.
+
+### 2. Login Flow
+
+- Endpoint: `POST /api/v1/auth/login`
+- Request: `{ email, password }` with `withCredentials: true`.
+- Backend response: `{ access_token, token_type, expires_in, user }` and sets the HttpOnly `refresh_token` cookie.
+- Frontend sets in-memory session (`setSession(access_token, user)`) and transitions `AuthProvider` to `authenticated`.
+
+### 3. Session Restoration & F5 Browser Reload Persistence
+
+- When an administrator reloads the browser (F5) or visits an admin URL directly:
+  1. In-memory access token is cleared by the browser reload.
+  2. `AuthProvider` initializes in the `checking` state.
+  3. `ProtectedAdminRoute` renders a loading spinner while `status === "checking"`, preventing premature redirects to `/admin/login`.
+  4. Scoped to admin routes (`ensureSessionChecked()`), the client issues `POST /api/v1/auth/refresh` with an empty body and `withCredentials: true`.
+  5. The browser automatically includes the HttpOnly `refresh_token` cookie with the request.
+  6. The backend validates and rotates the token, returning a fresh `access_token` and `user`.
+  7. Frontend restores the in-memory session and transitions to `authenticated`.
+- **A valid logged-in user does NOT need to sign in again after F5 or page reload.**
+
+### 4. Protected Route Guarantees
+
+- `ProtectedAdminRoute` distinguishes 3 authentication states:
+  - `checking`: Renders `LoadingSpinner` during session bootstrap/restoration.
+  - `authenticated`: Renders protected admin content (`AdminLayout`, `AdminDashboard`, `SpaSectionsPage`, `ContentBlocksPage`, `UsersPage`).
+  - `unauthenticated`: Redirects to `/admin/login` (preserving intended destination via location state).
+- Ensures zero visual flashing or accidental logout redirects during initial reload.
+
+### 5. Logout Flow
+
+- Endpoint: `POST /api/v1/auth/logout`
+- Request: Empty body with `withCredentials: true`.
+- Backend revokes the refresh token in the database and clears the cookie (`Max-Age=0`).
+- Frontend clears in-memory state (`clearSession()`) and transitions `AuthProvider` to `unauthenticated`.
+
+### 6. Automatic 401 Interceptor & Single-Flight Refresh
+
+- Axios response interceptor catches `401 Unauthorized` responses on protected requests.
+- **Single-Flight Coalescing**: Concurrent 401s share a single in-flight `refreshPromise` calling `POST /api/v1/auth/refresh` with `withCredentials: true`.
+- **Automatic Retry**: Once refresh succeeds, original failed requests are retried once with the new access token.
+- **Generation Guard**: Prevents race conditions from overwriting newer tokens with stale responses.
+- **Loop Prevention**: 401 errors from `/auth/login`, `/auth/refresh`, and `/auth/logout` are explicitly excluded from interceptor retry loops.
+
+### 7. Public Route Isolation
+
+- Public visitor endpoints (`GET /api/v1/public/page`, `POST /api/v1/public/contact`, `POST /api/v1/public/testimonials`) require zero authentication.
+- Loading the public site triggers 0 `/auth/refresh` requests. Auth cookies and session restoration are strictly isolated to admin workflows.
 
 ## Visual Design System & Token Architecture
 

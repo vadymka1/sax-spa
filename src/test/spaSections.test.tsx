@@ -132,7 +132,7 @@ function renderTestRouter(initialEntries = ["/admin/sections"]) {
 
 describe("FRONTEND F5.1 — Admin SpaSection Management & Accessibility", () => {
   beforeEach(() => {
-    authSession.setTokens("valid-access", "valid-refresh");
+    authSession.setAccessToken("valid-access");
     authSession.resetCheckedState();
     server.use(
       http.get(`${env.apiBaseUrl}/api/v1/auth/me`, () => {

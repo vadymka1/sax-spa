@@ -102,7 +102,7 @@ const mockMessages: AdminContactMessageDto[] = [
 
 describe("FRONTEND CONTACT V2 — ADMIN CONTACT MESSAGES INBOX", () => {
   beforeEach(() => {
-    authSession.setTokens("mock-access-token", "mock-refresh-token");
+    authSession.setAccessToken("mock-access-token");
     authSession.resetCheckedState();
     server.use(
       http.get(`${env.apiBaseUrl}/api/v1/auth/me`, () => {
