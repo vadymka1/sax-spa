@@ -241,6 +241,12 @@ describe("FRONTEND TESTIMONIALS V2 — PUBLIC SUBMISSION + ADMIN MODERATION + CA
         seo_description: "Ensemble description",
         seo_keywords: [],
       },
+      appearance: {
+        background_media: null,
+        overlay_opacity: 0.35,
+        background_position: "center",
+        background_size: "cover",
+      },
       sections: [
         {
           id: "bbbbbbbb-0000-4000-8000-000000000001",
@@ -645,6 +651,12 @@ describe("FRONTEND TESTIMONIALS V2 — PUBLIC SUBMISSION + ADMIN MODERATION + CA
           seo_title: "SPA Ensemble",
           seo_description: "Ensemble",
           seo_keywords: [],
+        },
+        appearance: {
+          background_media: null,
+          overlay_opacity: 0.35,
+          background_position: "center",
+          background_size: "cover",
         },
         sections: [
           {

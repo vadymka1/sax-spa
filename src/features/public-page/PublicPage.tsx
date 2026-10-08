@@ -54,8 +54,33 @@ const PublicPageInner: React.FC = () => {
     );
   }
 
+  const appearance = data.appearance;
+  const hasBackground = Boolean(appearance?.background_media);
+
+  const backgroundStyle: React.CSSProperties = hasBackground
+    ? {
+        backgroundImage: `url(${appearance.background_media!.url})`,
+        backgroundPosition: appearance.background_position,
+        backgroundSize: appearance.background_size,
+        backgroundRepeat: "no-repeat",
+      }
+    : {};
+
   return (
-    <div className={styles.pageWrapper}>
+    <div
+      className={styles.pageWrapper}
+      style={backgroundStyle}
+      data-testid="public-page-wrapper"
+    >
+      {hasBackground && (
+        <div
+          className={styles.pageOverlay}
+          style={{ opacity: appearance.overlay_opacity }}
+          aria-hidden="true"
+          data-testid="public-page-overlay"
+        />
+      )}
+
       <PublicHeader
         siteTitle={data.page.title}
         sections={sortedSections}

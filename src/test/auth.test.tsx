@@ -777,6 +777,12 @@ describe("FRONTEND AUTH V3 — Persistent Session Restore (Auth Contract C)", ()
               slug: "home",
               title: "Public SPA Page",
             },
+            appearance: {
+              background_media: null,
+              overlay_opacity: 0.35,
+              background_position: "center",
+              background_size: "cover",
+            },
             sections: [],
             testimonials: [],
           },

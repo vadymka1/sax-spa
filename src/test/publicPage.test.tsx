@@ -23,6 +23,12 @@ const mockDynamicPublicPageResponse = {
       seo_description: "Dynamic public SPA",
       seo_keywords: ["saxophone"],
     },
+    appearance: {
+      background_media: null,
+      overlay_opacity: 0.35,
+      background_position: "center" as const,
+      background_size: "cover" as const,
+    },
     sections: [
       {
         id: "e0b9687e-e2e4-4d8b-9a84-9343ee6df322",
@@ -80,6 +86,12 @@ const mockTwelveSectionsPublicPageResponse = {
       seo_title: "SPA Saxophone Ensemble",
       seo_description: "Scaling test",
       seo_keywords: ["saxophone"],
+    },
+    appearance: {
+      background_media: null,
+      overlay_opacity: 0.35,
+      background_position: "center" as const,
+      background_size: "cover" as const,
     },
     sections: [
       {
@@ -466,6 +478,12 @@ describe("PublicPage Feature F2", () => {
               slug: "home",
               title: "Empty Saxophone Page",
             },
+            appearance: {
+              background_media: null,
+              overlay_opacity: 0.35,
+              background_position: "center",
+              background_size: "cover",
+            },
             sections: [],
             testimonials: [],
           },
@@ -624,6 +642,12 @@ describe("PublicPage Feature F2", () => {
           slug: "home",
           title: "SPA Saxophone Ensemble Full Media Page",
           seo_title: "Full Media Page",
+        },
+        appearance: {
+          background_media: null,
+          overlay_opacity: 0.35,
+          background_position: "center",
+          background_size: "cover",
         },
         sections: [
           {

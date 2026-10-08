@@ -245,3 +245,53 @@ react-spa-sax/
 - **Admin ContentBlock Management**:
   - `title` and `text`: Localized independently per language (`translations.en`, `translations.de`).
   - `media`: Shared across languages and not duplicated.
+
+## Page Appearance (V1)
+
+- **Feature Overview**: Enables administrative configuration of the visual page background and overlay on the public SPA.
+- **Supported Settings**:
+  - `background_media`: Image media asset (`image/jpeg`, `image/png`, `image/webp`). Managed through the shared Media API.
+  - `overlay_opacity`: Soft ivory overlay intensity ranging from `0.0` (0%) to `1.0` (100%).
+  - `background_position`: CSS positioning (`center`, `top`, `bottom`).
+  - `background_size`: Sizing mode (`cover` fills the screen, may crop; `contain` preserves aspect ratio without cropping).
+- **Admin Management Route**: Dedicated protected route `/admin/page-appearance` accessible via the admin navigation sidebar.
+- **Workflow & Media Sharing**:
+  - Selecting an image uploads the asset via the existing `POST /api/v1/admin/media/upload` endpoint.
+  - Upon upload success, the appearance is updated via `PATCH /api/v1/admin/page-appearance` with `{ background_media_id: "<id>" }`.
+  - Removing the background sends `{ background_media_id: null }` without deleting the underlying media asset.
+  - Partial PATCH: Only modified fields are sent when updating overlay opacity, position, or size.
+  - Live Preview: Real-time visual preview in the admin interface reacting dynamically to unsaved slider and option adjustments before persisting changes.
+- **Public SPA Rendering Behavior**:
+  - When `background_media` is present: The public page root applies `background-image`, `background-position`, `background-size`, and renders a soft ivory overlay (`var(--color-public-bg)` with dynamic opacity).
+  - Layering & Readability: The overlay uses `pointer-events: none` and `z-index: 0`. Public content and interactive controls sit at `z-index: 1`, while the sticky header is at `z-index: 1000`. Content clickability and accessibility are fully preserved.
+  - When `background_media` is null: Falls back gracefully to the default editorial background without broken styles.
+  - Language-Independent: Appearance settings are shared across all locales (`en`, `de`). Switching languages does not reset or refetch appearance settings.
+- **Appearance Media Contract**:
+  - The appearance media DTO strictly enforces the backend discriminator:
+    ```json
+    {
+      "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+      "type": "image",
+      "url": "https://api.enstisax.com/uploads/...",
+      "alt_text": null
+    }
+    ```
+  - Both public and admin appearance schemas strictly require `type: "image"`. Discriminator-less payloads, non-image types (`video`, `youtube`), and legacy `media_type` shapes are rejected at the frontend schema level.
+
+### Production Upload Persistence Note
+
+The backend stores uploaded background and media assets on the filesystem (`/app/uploads`). The production environment **MUST** mount persistent volume storage for uploads to ensure background images survive container recreation or deployments.
+
+Expected production Docker Compose configuration:
+
+```yaml
+services:
+  backend:
+    volumes:
+      - uploads_data:/app/uploads
+
+volumes:
+  uploads_data:
+```
+
+> **Warning**: Never run destructive volume removal commands such as `docker compose down -v` in production, as this would erase uploaded media assets.

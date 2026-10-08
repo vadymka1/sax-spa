@@ -37,6 +37,12 @@ const mockEnglishPublicPage = {
       seo_description: "English description",
       seo_keywords: ["sax"],
     },
+    appearance: {
+      background_media: null,
+      overlay_opacity: 0.35,
+      background_position: "center" as const,
+      background_size: "cover" as const,
+    },
     sections: [
       {
         id: "e0b9687e-e2e4-4d8b-9a84-9343ee6df322",
@@ -77,6 +83,12 @@ const mockGermanPublicPage = {
       seo_title: "SPA Saxophon Ensemble",
       seo_description: "Deutsche Beschreibung",
       seo_keywords: ["sax"],
+    },
+    appearance: {
+      background_media: null,
+      overlay_opacity: 0.35,
+      background_position: "center" as const,
+      background_size: "cover" as const,
     },
     sections: [
       {
