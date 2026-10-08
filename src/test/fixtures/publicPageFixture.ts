@@ -8,6 +8,12 @@ export const validPublicPageResponse = {
       seo_description: "World-class musical performances",
       seo_keywords: ["saxophone", "ensemble", "music"],
     },
+    appearance: {
+      background_media: null,
+      overlay_opacity: 0.35,
+      background_position: "center",
+      background_size: "cover",
+    },
     sections: [
       {
         id: "e0b9687e-e2e4-4d8b-9a84-9343ee6df322",

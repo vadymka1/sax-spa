@@ -217,6 +217,12 @@ describe("FRONTEND F8 — Final Integration & Release Validation", () => {
             seo_description: "Public ensemble application",
             seo_keywords: ["saxophone", "ensemble"],
           },
+          appearance: {
+            background_media: null,
+            overlay_opacity: 0.35,
+            background_position: "center",
+            background_size: "cover",
+          },
           sections: [
             {
               id: SECTION_IDS.awards,

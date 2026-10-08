@@ -110,10 +110,37 @@ export const PublicTestimonialSchema = z.object({
   sort_order: z.number().int(),
 });
 export type PublicTestimonial = z.infer<typeof PublicTestimonialSchema>;
-export type PublicMediaDto = PublicMedia;
+export const BACKGROUND_POSITION_VALUES = ["center", "top", "bottom"] as const;
+export const BackgroundPositionSchema = z.enum(BACKGROUND_POSITION_VALUES);
+export type BackgroundPosition = z.infer<typeof BackgroundPositionSchema>;
+
+export const BACKGROUND_SIZE_VALUES = ["cover", "contain"] as const;
+export const BackgroundSizeSchema = z.enum(BACKGROUND_SIZE_VALUES);
+export type BackgroundSize = z.infer<typeof BackgroundSizeSchema>;
+
+export const PageAppearanceMediaSchema = z
+  .object({
+    id: z.string().uuid(),
+    type: z.literal("image"),
+    url: z.string(),
+    alt_text: z.string().nullable().optional(),
+  })
+  .strict();
+export type PageAppearanceMedia = z.infer<typeof PageAppearanceMediaSchema>;
+
+export const PublicPageAppearanceDtoSchema = z.object({
+  background_media: PageAppearanceMediaSchema.nullable(),
+  overlay_opacity: z.number().min(0).max(1),
+  background_position: BackgroundPositionSchema,
+  background_size: BackgroundSizeSchema,
+});
+export type PublicPageAppearanceDto = z.infer<
+  typeof PublicPageAppearanceDtoSchema
+>;
 
 export const PublicPageResponseSchema = z.object({
   page: PublicPageSchema,
+  appearance: PublicPageAppearanceDtoSchema,
   sections: z.array(PublicSpaSectionSchema),
   testimonials: z.array(PublicTestimonialSchema),
 });
@@ -652,4 +679,28 @@ export const ReorderTestimonialsRequestSchema = z.object({
 });
 export type ReorderTestimonialsRequest = z.infer<
   typeof ReorderTestimonialsRequestSchema
+>;
+
+export type PublicMediaDto = PublicMedia;
+
+// Admin Page Appearance DTO Schemas & Types
+export const AdminPageAppearanceDtoSchema = z.object({
+  background_media: PageAppearanceMediaSchema.nullable(),
+  overlay_opacity: z.number().min(0).max(1),
+  background_position: BackgroundPositionSchema,
+  background_size: BackgroundSizeSchema,
+});
+export type AdminPageAppearanceDto = z.infer<
+  typeof AdminPageAppearanceDtoSchema
+>;
+export type PageAppearance = AdminPageAppearanceDto;
+
+export const UpdatePageAppearanceRequestSchema = z.object({
+  background_media_id: z.string().uuid().nullable().optional(),
+  overlay_opacity: z.number().min(0).max(1).optional(),
+  background_position: BackgroundPositionSchema.optional(),
+  background_size: BackgroundSizeSchema.optional(),
+});
+export type UpdatePageAppearanceRequest = z.infer<
+  typeof UpdatePageAppearanceRequestSchema
 >;

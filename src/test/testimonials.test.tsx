@@ -204,6 +204,12 @@ describe("FRONTEND AUDIT — Testimonials Feature Pass", () => {
           slug: "home",
           title: "SPA Saxophone Ensemble",
         },
+        appearance: {
+          background_media: null,
+          overlay_opacity: 0.35,
+          background_position: "center",
+          background_size: "cover",
+        },
         sections: [],
         testimonials: [
           {
@@ -817,6 +823,12 @@ describe("FRONTEND AUDIT — Testimonials Feature Pass", () => {
             id: TEST_IDS.page,
             slug: "home",
             title: "SPA Saxophone Ensemble",
+          },
+          appearance: {
+            background_media: null,
+            overlay_opacity: 0.35,
+            background_position: "center",
+            background_size: "cover",
           },
           sections: includeSection
             ? [

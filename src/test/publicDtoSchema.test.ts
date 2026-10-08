@@ -89,4 +89,130 @@ describe("Public DTO Schema Validation", () => {
     const result = PublicPageEnvelopeSchema.safeParse(invalidMediaResponse);
     expect(result.success).toBe(false);
   });
+
+  it("fails parsing cleanly when appearance field is completely missing", () => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { appearance, ...withoutAppearance } = validPublicPageResponse.data;
+    const responseWithoutAppearance = {
+      data: withoutAppearance,
+    };
+
+    const result = PublicPageEnvelopeSchema.safeParse(
+      responseWithoutAppearance,
+    );
+    expect(result.success).toBe(false);
+  });
+
+  it("parses valid public page response containing background image with type: image", () => {
+    const validWithBg = {
+      data: {
+        ...validPublicPageResponse.data,
+        appearance: {
+          background_media: {
+            id: "11111111-1111-4111-8111-111111111111",
+            type: "image",
+            url: "https://api.enstisax.com/uploads/bg.webp",
+            alt_text: "Ensemble background",
+          },
+          overlay_opacity: 0.4,
+          background_position: "top",
+          background_size: "cover",
+        },
+      },
+    };
+
+    const result = PublicPageEnvelopeSchema.safeParse(validWithBg);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.data.appearance.background_media?.type).toBe("image");
+      expect(result.data.data.appearance.background_media?.url).toBe(
+        "https://api.enstisax.com/uploads/bg.webp",
+      );
+    }
+  });
+
+  it("fails parsing cleanly when background_media has missing discriminator", () => {
+    const invalidAppearanceResponse = {
+      data: {
+        ...validPublicPageResponse.data,
+        appearance: {
+          background_media: {
+            id: "11111111-1111-4111-8111-111111111111",
+            url: "https://api.enstisax.com/uploads/bg.webp",
+          },
+          overlay_opacity: 0.35,
+          background_position: "center",
+          background_size: "cover",
+        },
+      },
+    };
+
+    const result = PublicPageEnvelopeSchema.safeParse(
+      invalidAppearanceResponse,
+    );
+    expect(result.success).toBe(false);
+  });
+
+  it("fails parsing cleanly when background_media uses legacy media_type instead of type", () => {
+    const legacyAppearanceResponse = {
+      data: {
+        ...validPublicPageResponse.data,
+        appearance: {
+          background_media: {
+            id: "11111111-1111-4111-8111-111111111111",
+            media_type: "image",
+            url: "https://api.enstisax.com/uploads/bg.webp",
+          },
+          overlay_opacity: 0.35,
+          background_position: "center",
+          background_size: "cover",
+        },
+      },
+    };
+
+    const result = PublicPageEnvelopeSchema.safeParse(legacyAppearanceResponse);
+    expect(result.success).toBe(false);
+  });
+
+  it("fails parsing cleanly when background_media has non-image type (video or youtube)", () => {
+    const invalidVideoResponse = {
+      data: {
+        ...validPublicPageResponse.data,
+        appearance: {
+          background_media: {
+            id: "11111111-1111-4111-8111-111111111111",
+            type: "video",
+            url: "https://api.enstisax.com/uploads/video.mp4",
+          },
+          overlay_opacity: 0.35,
+          background_position: "center",
+          background_size: "cover",
+        },
+      },
+    };
+
+    expect(
+      PublicPageEnvelopeSchema.safeParse(invalidVideoResponse).success,
+    ).toBe(false);
+
+    const invalidYoutubeResponse = {
+      data: {
+        ...validPublicPageResponse.data,
+        appearance: {
+          background_media: {
+            id: "11111111-1111-4111-8111-111111111111",
+            type: "youtube",
+            url: "https://www.youtube.com/watch?v=123",
+          },
+          overlay_opacity: 0.35,
+          background_position: "center",
+          background_size: "cover",
+        },
+      },
+    };
+
+    expect(
+      PublicPageEnvelopeSchema.safeParse(invalidYoutubeResponse).success,
+    ).toBe(false);
+  });
 });
