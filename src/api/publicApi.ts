@@ -1,5 +1,6 @@
 import { apiClient } from "./client";
 import { normalizeApiError } from "./errors";
+import { Locale, DEFAULT_LOCALE } from "../lib/locale";
 import {
   ContactRequest,
   CreatePublicTestimonialRequest,
@@ -10,9 +11,13 @@ import {
 } from "./types";
 
 export const publicApi = {
-  async getPublicPage(): Promise<PublicPageResponse> {
+  async getPublicPage(
+    locale: Locale = DEFAULT_LOCALE,
+  ): Promise<PublicPageResponse> {
     try {
-      const response = await apiClient.get("/api/v1/public/page");
+      const response = await apiClient.get("/api/v1/public/page", {
+        params: { locale },
+      });
       const parsed = PublicPageEnvelopeSchema.parse(response.data);
       return parsed.data;
     } catch (error) {

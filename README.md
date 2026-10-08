@@ -229,7 +229,19 @@ react-spa-sax/
 │   ├── components/       # Common reusable UI components (ErrorBoundary, ErrorMessage, LoadingSpinner)
 │   ├── features/         # Feature components (public-page, auth, admin sections/content)
 │   ├── hooks/            # React custom hooks
-│   ├── lib/              # Environment resolver & media guard utilities
+│   ├── lib/              # Environment resolver, locale state & media guard utilities
 │   ├── styles/           # Global CSS, resets & design system tokens
 │   └── test/             # Vitest tests, MSW handlers & fixtures
 ```
+
+## Multilingual Architecture (V1.1)
+
+- **Supported Locales**: `en` (canonical default and fallback) and `de`.
+- **Public Page**: Automatically requests `GET /api/v1/public/page?locale=<locale>`. Renders localized title, content blocks, and localized `navigation_label`. Zero client-side fallback merging; renders backend-provided localized values directly.
+- **Admin SpaSection Management**:
+  - `name`: Localized independently per language (`translations.en.name` required, `translations.de.name` optional).
+  - `navigation_label`: Localized independently per language (`translations.en.navigation_label`, `translations.de.navigation_label`).
+  - `section_key` / `slug`: Immutable, technical identifier that remains language-independent for anchor navigation.
+- **Admin ContentBlock Management**:
+  - `title` and `text`: Localized independently per language (`translations.en`, `translations.de`).
+  - `media`: Shared across languages and not duplicated.

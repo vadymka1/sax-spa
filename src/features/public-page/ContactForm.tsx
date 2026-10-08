@@ -1,6 +1,8 @@
 import { useState, type FormEvent } from "react";
 import { isAppApiError } from "../../api/errors";
 import { publicApi } from "../../api/publicApi";
+import { useLocale } from "./useLocale";
+import { t } from "../../lib/translations";
 import styles from "./ContactForm.module.css";
 
 interface FormState {
@@ -20,6 +22,7 @@ interface FormErrors {
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export function ContactForm() {
+  const { locale } = useLocale();
   const [formData, setFormData] = useState<FormState>({
     name: "",
     email: "",
@@ -38,31 +41,31 @@ export function ContactForm() {
 
     const trimmedName = formData.name.trim();
     if (!trimmedName) {
-      nextErrors.name = "Name is required.";
+      nextErrors.name = t(locale, "contact", "nameRequired");
     } else if (trimmedName.length > 100) {
-      nextErrors.name = "Name must not exceed 100 characters.";
+      nextErrors.name = t(locale, "contact", "nameMaxLength");
     }
 
     const trimmedEmail = formData.email.trim();
     if (!trimmedEmail) {
-      nextErrors.email = "Email is required.";
+      nextErrors.email = t(locale, "contact", "emailRequired");
     } else if (!EMAIL_REGEX.test(trimmedEmail)) {
-      nextErrors.email = "Please enter a valid email address.";
+      nextErrors.email = t(locale, "contact", "emailInvalid");
     } else if (trimmedEmail.length > 255) {
-      nextErrors.email = "Email must not exceed 255 characters.";
+      nextErrors.email = t(locale, "contact", "emailMaxLength");
     }
 
     if (formData.subject.trim().length > 200) {
-      nextErrors.subject = "Subject must not exceed 200 characters.";
+      nextErrors.subject = t(locale, "contact", "subjectMaxLength");
     }
 
     const trimmedMessage = formData.message.trim();
     if (!trimmedMessage) {
-      nextErrors.message = "Message is required.";
+      nextErrors.message = t(locale, "contact", "messageRequired");
     } else if (trimmedMessage.length < 10) {
-      nextErrors.message = "Message must be at least 10 characters long.";
+      nextErrors.message = t(locale, "contact", "messageMinLength");
     } else if (trimmedMessage.length > 5000) {
-      nextErrors.message = "Message must not exceed 5000 characters.";
+      nextErrors.message = t(locale, "contact", "messageMaxLength");
     }
 
     setErrors(nextErrors);
@@ -98,16 +101,12 @@ export function ContactForm() {
       setErrors({});
     } catch (err) {
       if (isAppApiError(err)) {
-        setErrorMessage(
-          err.message || "Failed to send your message. Please try again.",
-        );
+        setErrorMessage(err.message || t(locale, "contact", "errorFallback"));
         if (err.requestId) {
           setRequestId(err.requestId);
         }
       } else {
-        setErrorMessage(
-          "An unexpected error occurred. Please try again later.",
-        );
+        setErrorMessage(t(locale, "contact", "unexpectedError"));
       }
     } finally {
       setIsSubmitting(false);
@@ -127,11 +126,9 @@ export function ContactForm() {
       data-testid="contact-form-section"
     >
       <h2 id="contact-form-title" className={styles.title}>
-        Get in Touch
+        {t(locale, "contact", "title")}
       </h2>
-      <p className={styles.subtitle}>
-        Have a question or looking to book a performance? Send a message below.
-      </p>
+      <p className={styles.subtitle}>{t(locale, "contact", "subtitle")}</p>
 
       {isSuccess ? (
         <div
@@ -141,15 +138,15 @@ export function ContactForm() {
           data-testid="contact-success"
         >
           <p>
-            <strong>Thank you!</strong> Your message has been sent successfully.
-            We will get back to you soon.
+            <strong>{t(locale, "contact", "successTitle")}</strong>{" "}
+            {t(locale, "contact", "successBody")}
           </p>
           <button
             type="button"
             className={styles.sendAnotherButton}
             onClick={handleReset}
           >
-            Send another message
+            {t(locale, "contact", "sendAnother")}
           </button>
         </div>
       ) : (
@@ -169,7 +166,7 @@ export function ContactForm() {
               <p>{errorMessage}</p>
               {requestId && (
                 <span className={styles.requestIdText}>
-                  Request ID: {requestId}
+                  {t(locale, "contact", "requestId")}: {requestId}
                 </span>
               )}
             </div>
@@ -177,7 +174,7 @@ export function ContactForm() {
 
           <div className={styles.fieldGroup}>
             <label htmlFor="contact-name" className={styles.label}>
-              Name{" "}
+              {t(locale, "contact", "nameLabel")}{" "}
               <span className={styles.requiredMark} aria-hidden="true">
                 *
               </span>
@@ -213,7 +210,7 @@ export function ContactForm() {
 
           <div className={styles.fieldGroup}>
             <label htmlFor="contact-email" className={styles.label}>
-              Email{" "}
+              {t(locale, "contact", "emailLabel")}{" "}
               <span className={styles.requiredMark} aria-hidden="true">
                 *
               </span>
@@ -251,7 +248,7 @@ export function ContactForm() {
 
           <div className={styles.fieldGroup}>
             <label htmlFor="contact-subject" className={styles.label}>
-              Subject (optional)
+              {t(locale, "contact", "subjectLabel")}
             </label>
             <input
               id="contact-subject"
@@ -285,7 +282,7 @@ export function ContactForm() {
 
           <div className={styles.fieldGroup}>
             <label htmlFor="contact-message" className={styles.label}>
-              Message{" "}
+              {t(locale, "contact", "messageLabel")}{" "}
               <span className={styles.requiredMark} aria-hidden="true">
                 *
               </span>
@@ -330,7 +327,9 @@ export function ContactForm() {
             disabled={isSubmitting}
             data-testid="contact-submit"
           >
-            {isSubmitting ? "Sending..." : "Send Message"}
+            {isSubmitting
+              ? t(locale, "contact", "sendingMessage")
+              : t(locale, "contact", "sendMessage")}
           </button>
         </form>
       )}

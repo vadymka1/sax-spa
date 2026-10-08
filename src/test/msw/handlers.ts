@@ -2,7 +2,31 @@ import { http, HttpResponse } from "msw";
 import { validPublicPageResponse } from "../fixtures/publicPageFixture";
 
 export const handlers = [
-  http.get("http://localhost:8000/api/v1/public/page", () => {
+  http.get("http://localhost:8000/api/v1/public/page", ({ request }) => {
+    const url = new URL(request.url);
+    const locale = url.searchParams.get("locale");
+    if (locale === "de") {
+      return HttpResponse.json({
+        data: {
+          ...validPublicPageResponse.data,
+          sections: [
+            {
+              ...validPublicPageResponse.data.sections[0],
+              title: "Über uns",
+              navigation_label: "Über uns",
+              blocks: [
+                {
+                  ...validPublicPageResponse.data.sections[0]!.blocks[0]!,
+                  title: "Wer wir sind",
+                  text: "Das SPA Saxophon-Ensemble bietet erstklassige musikalische Darbietungen.",
+                },
+                ...validPublicPageResponse.data.sections[0]!.blocks.slice(1),
+              ],
+            },
+          ],
+        },
+      });
+    }
     return HttpResponse.json(validPublicPageResponse);
   }),
   http.get("http://localhost:8000/api/v1/auth/me", () => {

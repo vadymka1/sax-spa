@@ -364,6 +364,12 @@ describe("FRONTEND F5.1 — Admin SpaSection Management & Accessibility", () => 
     expect(screen.getByText("International Awards")).toBeInTheDocument();
     expect(capturedPayload).toEqual({
       title: "International Awards",
+      name: "International Awards",
+      translations: {
+        en: {
+          name: "International Awards",
+        },
+      },
     });
   });
 

@@ -1,6 +1,8 @@
 import { useState, type FormEvent } from "react";
 import { isAppApiError } from "../../api/errors";
 import { publicApi } from "../../api/publicApi";
+import { useLocale } from "./useLocale";
+import { t } from "../../lib/translations";
 import styles from "./LeaveReviewForm.module.css";
 
 interface ReviewFormState {
@@ -16,6 +18,7 @@ interface ReviewFormErrors {
 }
 
 export function LeaveReviewForm() {
+  const { locale } = useLocale();
   const [formData, setFormData] = useState<ReviewFormState>({
     author_name: "",
     author_role: "",
@@ -33,21 +36,21 @@ export function LeaveReviewForm() {
 
     const trimmedName = formData.author_name.trim();
     if (!trimmedName) {
-      nextErrors.author_name = "Name is required.";
+      nextErrors.author_name = t(locale, "review", "nameRequired");
     } else if (trimmedName.length > 120) {
-      nextErrors.author_name = "Name must not exceed 120 characters.";
+      nextErrors.author_name = t(locale, "review", "nameMaxLength");
     }
 
     const trimmedRole = formData.author_role.trim();
     if (trimmedRole.length > 160) {
-      nextErrors.author_role = "Role/company must not exceed 160 characters.";
+      nextErrors.author_role = t(locale, "review", "roleMaxLength");
     }
 
     const trimmedText = formData.text.trim();
     if (!trimmedText) {
-      nextErrors.text = "Review is required.";
+      nextErrors.text = t(locale, "review", "textRequired");
     } else if (trimmedText.length > 3000) {
-      nextErrors.text = "Review must not exceed 3000 characters.";
+      nextErrors.text = t(locale, "review", "textMaxLength");
     }
 
     setErrors(nextErrors);
@@ -83,12 +86,10 @@ export function LeaveReviewForm() {
       setErrors({});
     } catch (err) {
       if (isAppApiError(err)) {
-        setErrorMessage(
-          err.message || "Failed to submit your review. Please try again.",
-        );
+        setErrorMessage(err.message || t(locale, "review", "errorFallback"));
         setRequestId(err.requestId || null);
       } else {
-        setErrorMessage("An unexpected error occurred. Please try again.");
+        setErrorMessage(t(locale, "review", "unexpectedError"));
       }
     } finally {
       setIsSubmitting(false);
@@ -97,24 +98,25 @@ export function LeaveReviewForm() {
 
   return (
     <div className={styles.reviewContainer}>
-      <h3 className={styles.title}>Leave a Review</h3>
-      <p className={styles.subtitle}>
-        Share your experience with our performances and recordings.
-      </p>
+      <h3 className={styles.title}>{t(locale, "review", "title")}</h3>
+      <p className={styles.subtitle}>{t(locale, "review", "subtitle")}</p>
 
       {isSuccess && (
         <div role="status" className={styles.successAlert}>
-          <h4 className={styles.successTitle}>Review Submitted</h4>
+          <h4 className={styles.successTitle}>
+            {t(locale, "review", "successTitle")}
+          </h4>
           <p className={styles.successText}>
-            Thank you! Your review was submitted for moderation. It will appear
-            after approval.
+            {t(locale, "review", "successBody")}
           </p>
         </div>
       )}
 
       {errorMessage && (
         <div role="alert" className={styles.errorAlert}>
-          <h4 className={styles.errorTitle}>Submission Error</h4>
+          <h4 className={styles.errorTitle}>
+            {t(locale, "review", "errorTitle")}
+          </h4>
           <p className={styles.errorText}>{errorMessage}</p>
           {requestId && (
             <div className={styles.requestId}>Request ID: {requestId}</div>
@@ -125,13 +127,14 @@ export function LeaveReviewForm() {
       <form className={styles.form} onSubmit={handleSubmit} noValidate>
         <div className={styles.fieldGroup}>
           <label htmlFor="review-author-name" className={styles.label}>
-            Your name <span className={styles.requiredMark}>*</span>
+            {t(locale, "review", "authorNameLabel")}{" "}
+            <span className={styles.requiredMark}>*</span>
           </label>
           <input
             id="review-author-name"
             type="text"
             className={`${styles.input} ${errors.author_name ? styles.fieldError : ""}`}
-            placeholder="e.g., Jane Doe"
+            placeholder={t(locale, "review", "authorNamePlaceholder")}
             value={formData.author_name}
             onChange={(e) => {
               setFormData((prev) => ({ ...prev, author_name: e.target.value }));
@@ -155,13 +158,13 @@ export function LeaveReviewForm() {
 
         <div className={styles.fieldGroup}>
           <label htmlFor="review-author-role" className={styles.label}>
-            Your role / company
+            {t(locale, "review", "authorRoleLabel")}
           </label>
           <input
             id="review-author-role"
             type="text"
             className={`${styles.input} ${errors.author_role ? styles.fieldError : ""}`}
-            placeholder="e.g., Festival Director, Critic (optional)"
+            placeholder={t(locale, "review", "authorRolePlaceholder")}
             value={formData.author_role}
             onChange={(e) => {
               setFormData((prev) => ({ ...prev, author_role: e.target.value }));
@@ -184,12 +187,13 @@ export function LeaveReviewForm() {
 
         <div className={styles.fieldGroup}>
           <label htmlFor="review-text" className={styles.label}>
-            Your review <span className={styles.requiredMark}>*</span>
+            {t(locale, "review", "reviewTextLabel")}{" "}
+            <span className={styles.requiredMark}>*</span>
           </label>
           <textarea
             id="review-text"
             className={`${styles.textarea} ${errors.text ? styles.fieldError : ""}`}
-            placeholder="Write your review here..."
+            placeholder={t(locale, "review", "reviewTextPlaceholder")}
             value={formData.text}
             onChange={(e) => {
               setFormData((prev) => ({ ...prev, text: e.target.value }));
@@ -214,7 +218,9 @@ export function LeaveReviewForm() {
           className={styles.submitButton}
           disabled={isSubmitting}
         >
-          {isSubmitting ? "Submitting..." : "Submit review"}
+          {isSubmitting
+            ? t(locale, "review", "submittingReview")
+            : t(locale, "review", "submitReview")}
         </button>
       </form>
     </div>

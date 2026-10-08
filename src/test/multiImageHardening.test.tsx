@@ -205,6 +205,11 @@ describe("FRONTEND V2.1 — Multi-Image Hardening & Type-Safe Form Boundaries", 
         block_type: "text_image",
         text: "Single image description",
         media_ids: [MEDIA_IDS.imgA],
+        translations: {
+          en: {
+            text: "Single image description",
+          },
+        },
       });
       expect(capturedPayload).not.toHaveProperty("media_id");
     });
@@ -300,6 +305,11 @@ describe("FRONTEND V2.1 — Multi-Image Hardening & Type-Safe Form Boundaries", 
         block_type: "text_image",
         text: "Multi image album",
         media_ids: [MEDIA_IDS.imgA, MEDIA_IDS.imgB, MEDIA_IDS.imgC],
+        translations: {
+          en: {
+            text: "Multi image album",
+          },
+        },
       });
       expect(capturedPayload).not.toHaveProperty("media_id");
     });

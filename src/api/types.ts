@@ -94,6 +94,7 @@ export const PublicSpaSectionSchema = z.object({
   id: z.string().uuid(),
   key: z.string(),
   title: z.string(),
+  name: z.string().optional(),
   navigation_label: z.string(),
   sort_order: z.number().int(),
   blocks: z.array(PublicContentBlockSchema),
@@ -185,31 +186,85 @@ export const UpdateUserRequestSchema = z.object({
 export type UpdateUserRequest = z.infer<typeof UpdateUserRequestSchema>;
 
 // Admin SpaSection DTO Schemas & Types
+export const SpaSectionTranslationDtoSchema = z.object({
+  name: z.string(),
+  navigation_label: z.string().nullable().optional(),
+});
+export type SpaSectionTranslationDto = z.infer<
+  typeof SpaSectionTranslationDtoSchema
+>;
+
+export const SpaSectionTranslationsDtoSchema = z.object({
+  en: SpaSectionTranslationDtoSchema,
+  de: SpaSectionTranslationDtoSchema.nullable().optional(),
+});
+export type SpaSectionTranslationsDto = z.infer<
+  typeof SpaSectionTranslationsDtoSchema
+>;
+
 export const AdminSpaSectionDtoSchema = z.object({
   id: z.string().uuid(),
   key: z.string(),
   title: z.string(),
-  navigation_label: z.string(),
+  name: z.string().optional(),
+  navigation_label: z.string().nullable().optional(),
   sort_order: z.number().int(),
   is_visible: z.boolean(),
-  content_block_count: z.number().int(),
+  content_block_count: z.number().int().optional().default(0),
+  translations: SpaSectionTranslationsDtoSchema.nullable().optional(),
   created_at: z.string(),
   updated_at: z.string(),
 });
 export type AdminSpaSectionDto = z.infer<typeof AdminSpaSectionDtoSchema>;
 
+export const CreateSpaSectionTranslationSchema = z.object({
+  name: z.string().min(1),
+  navigation_label: z.string().nullable().optional(),
+});
+export type CreateSpaSectionTranslation = z.infer<
+  typeof CreateSpaSectionTranslationSchema
+>;
+
+export const CreateSpaSectionTranslationsSchema = z.object({
+  en: CreateSpaSectionTranslationSchema,
+  de: CreateSpaSectionTranslationSchema.nullable().optional(),
+});
+export type CreateSpaSectionTranslations = z.infer<
+  typeof CreateSpaSectionTranslationsSchema
+>;
+
 export const CreateSpaSectionRequestSchema = z.object({
-  title: z.string().min(1),
+  title: z.string().min(1).optional(),
+  name: z.string().optional(),
   navigation_label: z.string().optional(),
+  translations: CreateSpaSectionTranslationsSchema.optional(),
 });
 export type CreateSpaSectionRequest = z.infer<
   typeof CreateSpaSectionRequestSchema
 >;
 
+export const UpdateSpaSectionTranslationSchema = z.object({
+  name: z.string().min(1).optional(),
+  navigation_label: z.string().nullable().optional(),
+});
+export type UpdateSpaSectionTranslation = z.infer<
+  typeof UpdateSpaSectionTranslationSchema
+>;
+
+export const UpdateSpaSectionTranslationsSchema = z.object({
+  en: UpdateSpaSectionTranslationSchema.optional(),
+  de: UpdateSpaSectionTranslationSchema.nullable().optional(),
+});
+export type UpdateSpaSectionTranslations = z.infer<
+  typeof UpdateSpaSectionTranslationsSchema
+>;
+
 export const UpdateSpaSectionRequestSchema = z.object({
   title: z.string().min(1).optional(),
-  navigation_label: z.string().optional(),
+  name: z.string().optional(),
+  navigation_label: z.string().nullable().optional(),
   is_visible: z.boolean().optional(),
+  translations: UpdateSpaSectionTranslationsSchema.optional(),
 });
 export type UpdateSpaSectionRequest = z.infer<
   typeof UpdateSpaSectionRequestSchema
@@ -232,6 +287,22 @@ export const AdminMediaTypeSchema = z.enum(["image", "video", "youtube"]);
 export type AdminMediaType = z.infer<typeof AdminMediaTypeSchema>;
 
 // Admin ContentBlock DTO Schemas & Types
+export const ContentBlockTranslationDtoSchema = z.object({
+  title: z.string().nullable().optional(),
+  text: z.string(),
+});
+export type ContentBlockTranslationDto = z.infer<
+  typeof ContentBlockTranslationDtoSchema
+>;
+
+export const ContentBlockTranslationsDtoSchema = z.object({
+  en: ContentBlockTranslationDtoSchema,
+  de: ContentBlockTranslationDtoSchema.nullable().optional(),
+});
+export type ContentBlockTranslationsDto = z.infer<
+  typeof ContentBlockTranslationsDtoSchema
+>;
+
 export const BlockAttachedMediaDtoSchema = z.object({
   id: z.string().uuid(),
   media_type: AdminMediaTypeSchema,
@@ -249,10 +320,12 @@ export const AdminContentBlockDtoSchema = z.object({
   id: z.string().uuid(),
   spa_section_id: z.string().uuid(),
   section_key: z.string(),
-  section_title: z.string(),
+  section_title: z.string().optional(),
+  section_name: z.string().optional(),
   block_type: ContentBlockTypeSchema,
   title: z.string().nullable().optional(),
   text: z.string(),
+  translations: ContentBlockTranslationsDtoSchema.nullable().optional(),
   media: z.preprocess(
     (val) => {
       if (val === null || val === undefined) return null;
@@ -274,11 +347,28 @@ export const AdminContentBlockDtoSchema = z.object({
 });
 export type AdminContentBlockDto = z.infer<typeof AdminContentBlockDtoSchema>;
 
+export const CreateContentBlockTranslationSchema = z.object({
+  title: z.string().optional(),
+  text: z.string().min(1),
+});
+export type CreateContentBlockTranslation = z.infer<
+  typeof CreateContentBlockTranslationSchema
+>;
+
+export const CreateContentBlockTranslationsSchema = z.object({
+  en: CreateContentBlockTranslationSchema,
+  de: CreateContentBlockTranslationSchema.nullable().optional(),
+});
+export type CreateContentBlockTranslations = z.infer<
+  typeof CreateContentBlockTranslationsSchema
+>;
+
 export const CreateContentBlockRequestSchema = z.object({
   spa_section_id: z.string().uuid(),
   block_type: ContentBlockTypeSchema,
   title: z.string().optional(),
-  text: z.string(),
+  text: z.string().optional(),
+  translations: CreateContentBlockTranslationsSchema.optional(),
   media_id: z.string().uuid().optional(),
   media_ids: z.array(z.string().uuid()).optional(),
   font_family: FontFamilySchema.optional(),
@@ -289,11 +379,28 @@ export type CreateContentBlockRequest = z.infer<
   typeof CreateContentBlockRequestSchema
 >;
 
+export const UpdateContentBlockTranslationSchema = z.object({
+  title: z.string().nullable().optional(),
+  text: z.string().min(1).optional(),
+});
+export type UpdateContentBlockTranslation = z.infer<
+  typeof UpdateContentBlockTranslationSchema
+>;
+
+export const UpdateContentBlockTranslationsSchema = z.object({
+  en: UpdateContentBlockTranslationSchema.optional(),
+  de: UpdateContentBlockTranslationSchema.nullable().optional(),
+});
+export type UpdateContentBlockTranslations = z.infer<
+  typeof UpdateContentBlockTranslationsSchema
+>;
+
 export const UpdateContentBlockRequestSchema = z.object({
   spa_section_id: z.string().uuid().optional(),
   block_type: ContentBlockTypeSchema.optional(),
   title: z.string().optional(),
   text: z.string().optional(),
+  translations: UpdateContentBlockTranslationsSchema.optional(),
   media_id: z.string().uuid().nullable().optional(),
   media_ids: z.array(z.string().uuid()).optional(),
   font_family: FontFamilySchema.optional(),

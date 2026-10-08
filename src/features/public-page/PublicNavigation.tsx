@@ -1,5 +1,7 @@
 import React from "react";
 import { PublicSpaSection } from "../../api/types";
+import { useLocale } from "./useLocale";
+import { t } from "../../lib/translations";
 import styles from "./PublicNavigation.module.css";
 
 interface PublicNavigationProps {
@@ -15,8 +17,10 @@ export const PublicNavigation: React.FC<PublicNavigationProps> = ({
   onLinkClick,
   navId = "public-navigation",
 }) => {
+  const { locale } = useLocale();
+
   return (
-    <nav id={navId} aria-label="Main navigation">
+    <nav id={navId} aria-label={t(locale, "nav", "mainNav")}>
       <ul className={styles.navList}>
         {sections.map((section) => {
           const isActive = activeSectionKey === section.key;

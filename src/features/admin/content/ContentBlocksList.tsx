@@ -50,7 +50,17 @@ export const ContentBlocksList: React.FC<ContentBlocksListProps> = ({
     <div className={styles.blocksGrid}>
       {blocks.map((block, index) => {
         const typeLabel = TYPE_LABELS[block.block_type] || block.block_type;
-        const accessibleBlockName = block.title || `${typeLabel} block`;
+        const displayTitle =
+          block.translations?.en?.title ?? block.title ?? "(Untitled Block)";
+        const displayText = block.translations?.en?.text ?? block.text;
+        const hasDe = Boolean(
+          block.translations?.de &&
+          (block.translations.de.text || block.translations.de.title),
+        );
+        const accessibleBlockName =
+          displayTitle !== "(Untitled Block)"
+            ? displayTitle
+            : `${typeLabel} block`;
 
         const isFirst = index === 0;
         const isLast = index === blocks.length - 1;
@@ -64,16 +74,20 @@ export const ContentBlocksList: React.FC<ContentBlocksListProps> = ({
                 <span className={styles.positionBadge}>
                   Position {index + 1} of {blocks.length}
                 </span>
-                <h3 className={styles.blockTitle}>
-                  {block.title || `(Untitled Block)`}
-                </h3>
+                <span className={styles.langBadge}>EN ✓</span>
+                {hasDe ? (
+                  <span className={styles.langBadge}>DE ✓</span>
+                ) : (
+                  <span className={styles.langBadgeMissing}>DE —</span>
+                )}
+                <h3 className={styles.blockTitle}>{displayTitle}</h3>
               </div>
               <span className={styles.orderBadge}>
                 Order: #{block.sort_order}
               </span>
             </div>
 
-            <p className={styles.textPreview}>{block.text}</p>
+            <p className={styles.textPreview}>{displayText}</p>
 
             {(() => {
               const mediaList = Array.isArray(block.media)

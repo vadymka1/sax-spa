@@ -33,8 +33,11 @@ export const SpaSectionsList: React.FC<SpaSectionsListProps> = ({
               <td style={{ fontWeight: 600, color: "var(--color-text-muted)" }}>
                 #{section.sort_order}
               </td>
-              <td style={{ fontWeight: 600 }}>{section.title}</td>
+              <td style={{ fontWeight: 600 }}>
+                {section.translations?.en.name || section.title}
+              </td>
               <td>{section.navigation_label || "—"}</td>
+
               <td>
                 <span className={styles.keyChip}>{section.key}</span>
               </td>
@@ -48,6 +51,21 @@ export const SpaSectionsList: React.FC<SpaSectionsListProps> = ({
                 >
                   {section.is_visible ? "Visible" : "Hidden"}
                 </span>
+                <span className={styles.langBadge} title="English present">
+                  EN ✓
+                </span>
+                {section.translations?.de?.name ? (
+                  <span className={styles.langBadge} title="German present">
+                    DE ✓
+                  </span>
+                ) : (
+                  <span
+                    className={styles.langBadgeMissing}
+                    title="German missing"
+                  >
+                    DE —
+                  </span>
+                )}
               </td>
               <td>{section.content_block_count}</td>
               <td>

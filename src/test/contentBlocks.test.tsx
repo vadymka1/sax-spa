@@ -423,6 +423,12 @@ describe("FRONTEND F6 — Admin ContentBlock Management + Media", () => {
         block_type: "text",
         title: "New Announcement",
         text: "Exciting new festival schedule announced.",
+        translations: {
+          en: {
+            title: "New Announcement",
+            text: "Exciting new festival schedule announced.",
+          },
+        },
       });
     });
   });
@@ -505,6 +511,11 @@ describe("FRONTEND F6 — Admin ContentBlock Management + Media", () => {
         block_type: "text_image",
         text: "Image description text",
         media_ids: [MEDIA_IDS.m1],
+        translations: {
+          en: {
+            text: "Image description text",
+          },
+        },
       });
     });
   });
@@ -582,6 +593,11 @@ describe("FRONTEND F6 — Admin ContentBlock Management + Media", () => {
         block_type: "text_video",
         text: "Video description text",
         media_id: MEDIA_IDS.m2,
+        translations: {
+          en: {
+            text: "Video description text",
+          },
+        },
       });
     });
   });
@@ -668,6 +684,11 @@ describe("FRONTEND F6 — Admin ContentBlock Management + Media", () => {
         block_type: "text_youtube",
         text: "Watch the full concert on YouTube.",
         media_id: MEDIA_IDS.m3,
+        translations: {
+          en: {
+            text: "Watch the full concert on YouTube.",
+          },
+        },
       });
     });
   });
@@ -1124,6 +1145,12 @@ describe("FRONTEND F6 — Admin ContentBlock Management + Media", () => {
       expect(capturedPatchPayload).toEqual({
         title: "Updated Title Only",
         text: "Awarded top saxophone honors in International Competition.",
+        translations: {
+          en: {
+            title: "Updated Title Only",
+            text: "Awarded top saxophone honors in International Competition.",
+          },
+        },
       });
     });
   });
