@@ -1,6 +1,9 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { PublicSpaSection } from "../../api/types";
 import { PublicNavigation } from "./PublicNavigation";
+import { LanguageSwitcher } from "./LanguageSwitcher";
+import { useLocale } from "./useLocale";
+import { t } from "../../lib/translations";
 import styles from "./PublicHeader.module.css";
 
 interface PublicHeaderProps {
@@ -15,6 +18,7 @@ export const PublicHeader: React.FC<PublicHeaderProps> = ({
   activeSectionKey,
 }) => {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const { locale } = useLocale();
 
   const closeMobileMenu = useCallback(() => {
     setIsMobileOpen(false);
@@ -41,27 +45,33 @@ export const PublicHeader: React.FC<PublicHeaderProps> = ({
     <header className={styles.header}>
       <div className={styles.container}>
         <a href="#top" className={styles.brandLink}>
-          {siteTitle || "SPA Saxophone Ensemble"}
+          {siteTitle || t(locale, "header", "brandFallback")}
         </a>
 
-        <div className={styles.desktopNav}>
-          <PublicNavigation
-            sections={sections}
-            activeSectionKey={activeSectionKey}
-            navId="public-desktop-navigation"
-          />
-        </div>
+        <div className={styles.headerActions}>
+          <div className={styles.desktopNav}>
+            <PublicNavigation
+              sections={sections}
+              activeSectionKey={activeSectionKey}
+              navId="public-desktop-navigation"
+            />
+          </div>
 
-        <button
-          type="button"
-          className={styles.mobileMenuButton}
-          aria-expanded={isMobileOpen}
-          aria-controls="public-mobile-navigation"
-          aria-label="Toggle navigation"
-          onClick={toggleMobileMenu}
-        >
-          {isMobileOpen ? "✕ Menu" : "☰ Menu"}
-        </button>
+          <LanguageSwitcher className={styles.desktopLangSwitcher} />
+
+          <button
+            type="button"
+            className={styles.mobileMenuButton}
+            aria-expanded={isMobileOpen}
+            aria-controls="public-mobile-navigation"
+            aria-label={t(locale, "header", "menuToggle")}
+            onClick={toggleMobileMenu}
+          >
+            {isMobileOpen
+              ? t(locale, "header", "menuClose")
+              : t(locale, "header", "menuOpen")}
+          </button>
+        </div>
       </div>
 
       <div
@@ -73,6 +83,9 @@ export const PublicHeader: React.FC<PublicHeaderProps> = ({
           onLinkClick={closeMobileMenu}
           navId="public-mobile-navigation"
         />
+        <div className={styles.mobileDrawerFooter}>
+          <LanguageSwitcher onSelect={closeMobileMenu} />
+        </div>
       </div>
     </header>
   );

@@ -10,7 +10,10 @@ import {
   FontFamilySchema,
   FontSize,
   FontSizeSchema,
+  UpdateContentBlockRequest,
+  UpdateContentBlockTranslations,
 } from "../../../api/types";
+import { Locale } from "../../../lib/locale";
 import { useAdminDialog } from "../sections/useAdminDialog";
 import {
   useCreateYoutubeMedia,
@@ -49,8 +52,12 @@ export const ContentBlockEditModal: React.FC<ContentBlockEditModalProps> = ({
 }) => {
   const [spaSectionId, setSpaSectionId] = useState("");
   const [blockType, setBlockType] = useState<ContentBlockType>("text");
-  const [title, setTitle] = useState("");
-  const [text, setText] = useState("");
+  const [activeTab, setActiveTab] = useState<Locale>("en");
+  const [enTitle, setEnTitle] = useState("");
+  const [enText, setEnText] = useState("");
+  const [deTitle, setDeTitle] = useState("");
+  const [deText, setDeText] = useState("");
+  const [deInitiallyExisted, setDeInitiallyExisted] = useState(false);
   const [fontFamily, setFontFamily] = useState<FontFamily>("sans");
   const [fontSize, setFontSize] = useState<FontSize>("md");
 
@@ -64,7 +71,7 @@ export const ContentBlockEditModal: React.FC<ContentBlockEditModalProps> = ({
   const [youtubeUrl, setYoutubeUrl] = useState("");
   const [formError, setFormError] = useState<string | null>(null);
 
-  const titleInputRef = useRef<HTMLInputElement | null>(null);
+  const enTitleInputRef = useRef<HTMLInputElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const updateBlockMutation = useUpdateContentBlock();
@@ -76,8 +83,17 @@ export const ContentBlockEditModal: React.FC<ContentBlockEditModalProps> = ({
     if (block) {
       setSpaSectionId(block.spa_section_id);
       setBlockType(block.block_type);
-      setTitle(block.title || "");
-      setText(block.text);
+      const initialEnTitle = block.translations?.en?.title ?? block.title ?? "";
+      const initialEnText = block.translations?.en?.text ?? block.text ?? "";
+      const hasDe = Boolean(block.translations?.de);
+      const initialDeTitle = block.translations?.de?.title ?? "";
+      const initialDeText = block.translations?.de?.text ?? "";
+      setEnTitle(initialEnTitle);
+      setEnText(initialEnText);
+      setDeTitle(initialDeTitle);
+      setDeText(initialDeText);
+      setDeInitiallyExisted(hasDe);
+      setActiveTab("en");
       setFontFamily(block.font_family || "sans");
       setFontSize(block.font_size || "md");
 
@@ -112,7 +128,7 @@ export const ContentBlockEditModal: React.FC<ContentBlockEditModalProps> = ({
     isOpen: isOpen && block !== null,
     onClose,
     isSubmitting,
-    initialFocusRef: titleInputRef,
+    initialFocusRef: enTitleInputRef,
   });
 
   if (!isOpen || !block) {
@@ -199,8 +215,23 @@ export const ContentBlockEditModal: React.FC<ContentBlockEditModalProps> = ({
     }
     setFormError(null);
 
-    if (!text.trim()) {
-      setFormError("Text content is required.");
+    if (!enText.trim()) {
+      setFormError("English text content is required.");
+      setActiveTab("en");
+      return;
+    }
+
+    if (!deInitiallyExisted && deTitle.trim() && !deText.trim()) {
+      setFormError(
+        "German text is required when creating a German translation.",
+      );
+      setActiveTab("de");
+      return;
+    }
+
+    if (deInitiallyExisted && deTitle.trim() && !deText.trim()) {
+      setFormError("German text cannot be empty if German title is present.");
+      setActiveTab("de");
       return;
     }
 
@@ -237,21 +268,54 @@ export const ContentBlockEditModal: React.FC<ContentBlockEditModalProps> = ({
         updatedMediaId = null;
       }
 
-      const payload: {
-        spa_section_id?: string;
-        block_type?: ContentBlockType;
-        title?: string;
-        text: string;
-        media_id?: string | null;
-        media_ids?: string[];
-        font_family?: FontFamily;
-        font_size?: FontSize;
-      } = {
+      const origEnTitle = block.translations?.en?.title ?? block.title ?? "";
+      const origEnText = block.translations?.en?.text ?? block.text ?? "";
+      const origDeTitle = block.translations?.de?.title ?? "";
+      const origDeText = block.translations?.de?.text ?? "";
+
+      const enTitleChanged = enTitle.trim() !== origEnTitle.trim();
+      const enTextChanged = enText !== origEnText;
+      const enChanged = enTitleChanged || enTextChanged;
+
+      const deTitleChanged = deTitle.trim() !== origDeTitle.trim();
+      const deTextChanged = deText !== origDeText;
+      const deChanged = deTitleChanged || deTextChanged;
+
+      const translationsPayload: UpdateContentBlockTranslations = {};
+
+      if (enChanged) {
+        translationsPayload.en = {
+          title: enTitle.trim() || undefined,
+          text: enText,
+        };
+      }
+
+      if (deChanged) {
+        if (!deInitiallyExisted) {
+          if (deText.trim()) {
+            translationsPayload.de = {
+              title: deTitle.trim() || undefined,
+              text: deText,
+            };
+          }
+        } else {
+          // Existing DE translation
+          translationsPayload.de = {
+            ...(deTitleChanged ? { title: deTitle.trim() || null } : {}),
+            ...(deTextChanged && deText.trim() ? { text: deText } : {}),
+          };
+        }
+      }
+
+      const payload: UpdateContentBlockRequest = {
         spa_section_id:
           spaSectionId !== block.spa_section_id ? spaSectionId : undefined,
         block_type: blockType !== block.block_type ? blockType : undefined,
-        title: title.trim() || undefined,
-        text,
+        title: enTitle.trim() || undefined,
+        text: enText,
+        ...(Object.keys(translationsPayload).length > 0
+          ? { translations: translationsPayload }
+          : {}),
       };
 
       if (blockType === "text_image") {
@@ -280,6 +344,10 @@ export const ContentBlockEditModal: React.FC<ContentBlockEditModalProps> = ({
       // Errors handled by mutation state / displayed in UI
     }
   };
+
+  const previewText =
+    (activeTab === "de" && deText.trim() ? deText : enText).trim() ||
+    "The quick brown fox jumps over the lazy dog. 0123456789.";
 
   return (
     <div
@@ -369,36 +437,102 @@ export const ContentBlockEditModal: React.FC<ContentBlockEditModalProps> = ({
               </select>
             </div>
 
-            <div className={styles.formGroup}>
-              <label htmlFor="edit-block-title" className={styles.label}>
-                Title (Optional)
-              </label>
-              <input
-                ref={titleInputRef}
-                id="edit-block-title"
-                type="text"
-                className={styles.input}
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                disabled={isSubmitting}
-                placeholder="e.g. Festival Highlights"
-              />
+            {/* Language Tabs */}
+            <div
+              className={styles.langTabs}
+              role="tablist"
+              aria-label="Language selection"
+            >
+              <button
+                type="button"
+                role="tab"
+                aria-selected={activeTab === "en"}
+                className={`${styles.langTab} ${activeTab === "en" ? styles.activeLangTab : ""}`}
+                onClick={() => setActiveTab("en")}
+              >
+                🇬🇧 English
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={activeTab === "de"}
+                className={`${styles.langTab} ${activeTab === "de" ? styles.activeLangTab : ""}`}
+                onClick={() => setActiveTab("de")}
+              >
+                🇩🇪 Deutsch
+              </button>
             </div>
 
-            <div className={styles.formGroup}>
-              <label htmlFor="edit-block-text" className={styles.label}>
-                Text Content *
-              </label>
-              <textarea
-                id="edit-block-text"
-                className={styles.textarea}
-                value={text}
-                onChange={(e) => setText(e.target.value)}
-                disabled={isSubmitting}
-                required
-                placeholder="Enter block paragraph content..."
-              />
-            </div>
+            {activeTab === "en" ? (
+              <>
+                <div className={styles.formGroup}>
+                  <label htmlFor="edit-block-en-title" className={styles.label}>
+                    Title (Optional)
+                  </label>
+                  <input
+                    ref={enTitleInputRef}
+                    id="edit-block-en-title"
+                    type="text"
+                    className={styles.input}
+                    value={enTitle}
+                    onChange={(e) => setEnTitle(e.target.value)}
+                    disabled={isSubmitting}
+                    placeholder="e.g. Festival Highlights"
+                  />
+                </div>
+
+                <div className={styles.formGroup}>
+                  <label htmlFor="edit-block-en-text" className={styles.label}>
+                    Text Content *
+                  </label>
+                  <textarea
+                    id="edit-block-en-text"
+                    className={styles.textarea}
+                    value={enText}
+                    onChange={(e) => setEnText(e.target.value)}
+                    disabled={isSubmitting}
+                    required
+                    placeholder="Enter block paragraph content..."
+                  />
+                </div>
+              </>
+            ) : (
+              <>
+                {!deInitiallyExisted && (
+                  <div className={styles.missingNotice}>
+                    No German translation yet. Enter German text to create one.
+                  </div>
+                )}
+                <div className={styles.formGroup}>
+                  <label htmlFor="edit-block-de-title" className={styles.label}>
+                    German Title (Optional)
+                  </label>
+                  <input
+                    id="edit-block-de-title"
+                    type="text"
+                    className={styles.input}
+                    value={deTitle}
+                    onChange={(e) => setDeTitle(e.target.value)}
+                    disabled={isSubmitting}
+                    placeholder="z.B. Festival-Highlights"
+                  />
+                </div>
+
+                <div className={styles.formGroup}>
+                  <label htmlFor="edit-block-de-text" className={styles.label}>
+                    German Text Content
+                  </label>
+                  <textarea
+                    id="edit-block-de-text"
+                    className={styles.textarea}
+                    value={deText}
+                    onChange={(e) => setDeText(e.target.value)}
+                    disabled={isSubmitting}
+                    placeholder="Deutschen Text hier eingeben..."
+                  />
+                </div>
+              </>
+            )}
 
             {/* Typography Controls */}
             <div className={styles.formGroup}>
@@ -459,9 +593,7 @@ export const ContentBlockEditModal: React.FC<ContentBlockEditModalProps> = ({
                   className={`${publicBlockStyles.blockText} ${FONT_FAMILY_CLASS[fontFamily]} ${FONT_SIZE_CLASS[fontSize]}`}
                   style={{ margin: 0 }}
                 >
-                  {text.trim()
-                    ? text
-                    : "The quick brown fox jumps over the lazy dog. 0123456789."}
+                  {previewText}
                 </p>
               </div>
             </div>

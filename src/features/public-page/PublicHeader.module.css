@@ -47,9 +47,19 @@
   border-radius: var(--radius-xs);
 }
 
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
 .desktopNav {
   display: flex;
   align-items: center;
+}
+
+.desktopLangSwitcher {
+  display: inline-flex;
 }
 
 .mobileMenuButton {
@@ -88,12 +98,24 @@
   padding: 1rem 1.5rem;
 }
 
+.mobileDrawerFooter {
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--color-public-border);
+  display: flex;
+  justify-content: center;
+}
+
 @media (max-width: 768px) {
   .container {
     padding-inline: 1.25rem;
   }
 
   .desktopNav {
+    display: none;
+  }
+
+  .desktopLangSwitcher {
     display: none;
   }
 

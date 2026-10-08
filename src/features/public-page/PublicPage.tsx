@@ -5,10 +5,14 @@ import { PublicHeader } from "./PublicHeader";
 import { PublicSection } from "./PublicSection";
 import { LoadingSpinner } from "../../components/common/LoadingSpinner";
 import { ErrorMessage } from "../../components/common/ErrorMessage";
+import { LocaleProvider } from "./LocaleProvider";
+import { useLocale } from "./useLocale";
+import { t } from "../../lib/translations";
 import styles from "./PublicPage.module.css";
 
-export const PublicPage: React.FC = () => {
-  const { data, isLoading, isError, error, refetch } = usePublicPage();
+const PublicPageInner: React.FC = () => {
+  const { locale } = useLocale();
+  const { data, isLoading, isError, error, refetch } = usePublicPage(locale);
 
   const pageTitle = data?.page.title;
 
@@ -34,7 +38,7 @@ export const PublicPage: React.FC = () => {
   if (isLoading) {
     return (
       <div className={styles.stateContainer}>
-        <LoadingSpinner label="Loading page content..." />
+        <LoadingSpinner label={t(locale, "common", "loadingPage")} />
       </div>
     );
   }
@@ -43,7 +47,7 @@ export const PublicPage: React.FC = () => {
     return (
       <div className={styles.stateContainer}>
         <ErrorMessage
-          error={error || "Failed to load public page"}
+          error={error || t(locale, "common", "errorLoadingPage")}
           onRetry={() => void refetch()}
         />
       </div>
@@ -69,19 +73,27 @@ export const PublicPage: React.FC = () => {
           ))
         ) : (
           <div className={styles.emptyPageState}>
-            <h2>No Content Available</h2>
-            <p>No content is available yet.</p>
+            <h2>{t(locale, "common", "noContentTitle")}</h2>
+            <p>{t(locale, "common", "noContentBody")}</p>
           </div>
         )}
       </main>
 
       <footer className={styles.footer}>
         <p>
-          &copy; {new Date().getFullYear()} {data.page.title}. All rights
-          reserved.
+          &copy; {new Date().getFullYear()} {data.page.title}.{" "}
+          {t(locale, "common", "allRightsReserved")}
         </p>
       </footer>
     </div>
+  );
+};
+
+export const PublicPage: React.FC = () => {
+  return (
+    <LocaleProvider>
+      <PublicPageInner />
+    </LocaleProvider>
   );
 };
 

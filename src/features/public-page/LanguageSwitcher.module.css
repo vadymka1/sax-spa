@@ -1,0 +1,51 @@
+.switcherContainer {
+  display: inline-flex;
+  align-items: center;
+  background-color: var(--color-bg-secondary, rgba(255, 255, 255, 0.08));
+  border: 1px solid var(--color-border, rgba(255, 255, 255, 0.15));
+  border-radius: 9999px;
+  padding: 2px;
+  gap: 2px;
+}
+
+.langButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  background: transparent;
+  border: none;
+  border-radius: 9999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-text-muted, #94a3b8);
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+  line-height: 1;
+}
+
+.langButton:hover:not(.activeLang) {
+  color: var(--color-text, #f8fafc);
+  background-color: rgba(255, 255, 255, 0.06);
+}
+
+.langButton:focus-visible {
+  outline: 2px solid var(--color-primary, #3b82f6);
+  outline-offset: 1px;
+}
+
+.activeLang {
+  background-color: var(--color-primary, #3b82f6);
+  color: #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.flag {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.label {
+  font-size: 0.8rem;
+  letter-spacing: 0.025em;
+}

@@ -2,6 +2,8 @@ import React, { useRef, useState } from "react";
 import {
   ContentBlockType,
   ContentBlockTypeSchema,
+  CreateContentBlockRequest,
+  CreateContentBlockTranslations,
   FONT_FAMILY_VALUES,
   FONT_SIZE_VALUES,
   FontFamily,
@@ -9,6 +11,7 @@ import {
   FontSize,
   FontSizeSchema,
 } from "../../../api/types";
+import { Locale } from "../../../lib/locale";
 import { useAdminDialog } from "../sections/useAdminDialog";
 import {
   useCreateContentBlock,
@@ -55,8 +58,11 @@ export const ContentBlockCreateModal: React.FC<
   ContentBlockCreateModalProps
 > = ({ spaSectionId, isOpen, onClose }) => {
   const [blockType, setBlockType] = useState<ContentBlockType>("text");
-  const [title, setTitle] = useState("");
-  const [text, setText] = useState("");
+  const [activeTab, setActiveTab] = useState<Locale>("en");
+  const [enTitle, setEnTitle] = useState("");
+  const [enText, setEnText] = useState("");
+  const [deTitle, setDeTitle] = useState("");
+  const [deText, setDeText] = useState("");
   const [fontFamily, setFontFamily] = useState<FontFamily>("sans");
   const [fontSize, setFontSize] = useState<FontSize>("md");
 
@@ -68,7 +74,7 @@ export const ContentBlockCreateModal: React.FC<
   const [youtubeUrl, setYoutubeUrl] = useState("");
   const [formError, setFormError] = useState<string | null>(null);
 
-  const titleInputRef = useRef<HTMLInputElement | null>(null);
+  const enTitleInputRef = useRef<HTMLInputElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const isSubmittingRef = useRef(false);
 
@@ -94,7 +100,7 @@ export const ContentBlockCreateModal: React.FC<
     isOpen,
     onClose,
     isSubmitting,
-    initialFocusRef: titleInputRef,
+    initialFocusRef: enTitleInputRef,
   });
 
   if (!isOpen) {
@@ -139,8 +145,11 @@ export const ContentBlockCreateModal: React.FC<
 
   const handleResetAndClose = () => {
     setBlockType("text");
-    setTitle("");
-    setText("");
+    setActiveTab("en");
+    setEnTitle("");
+    setEnText("");
+    setDeTitle("");
+    setDeText("");
     setFontFamily("sans");
     setFontSize("md");
     setUploads([]);
@@ -213,8 +222,18 @@ export const ContentBlockCreateModal: React.FC<
     isSubmittingRef.current = true;
     setFormError(null);
 
-    if (!text.trim()) {
-      setFormError("Text content is required.");
+    if (!enText.trim()) {
+      setFormError("English text content is required.");
+      setActiveTab("en");
+      isSubmittingRef.current = false;
+      return;
+    }
+
+    if (deTitle.trim() && !deText.trim()) {
+      setFormError(
+        "German text is required when creating a German translation.",
+      );
+      setActiveTab("de");
       isSubmittingRef.current = false;
       return;
     }
@@ -264,20 +283,27 @@ export const ContentBlockCreateModal: React.FC<
     }
 
     try {
-      const payload: {
-        spa_section_id: string;
-        block_type: ContentBlockType;
-        title?: string;
-        text: string;
-        media_id?: string;
-        media_ids?: string[];
-        font_family?: FontFamily;
-        font_size?: FontSize;
-      } = {
+      const translations: CreateContentBlockTranslations = {
+        en: {
+          title: enTitle.trim() || undefined,
+          text: enText,
+        },
+        ...(deText.trim()
+          ? {
+              de: {
+                title: deTitle.trim() || undefined,
+                text: deText,
+              },
+            }
+          : {}),
+      };
+
+      const payload: CreateContentBlockRequest = {
         spa_section_id: spaSectionId,
         block_type: blockType,
-        title: title.trim() || undefined,
-        text,
+        title: enTitle.trim() || undefined,
+        text: enText,
+        translations,
       };
 
       if (blockType === "text_image") {
@@ -308,6 +334,10 @@ export const ContentBlockCreateModal: React.FC<
       isSubmittingRef.current = false;
     }
   };
+
+  const previewText =
+    (activeTab === "de" && deText.trim() ? deText : enText).trim() ||
+    "The quick brown fox jumps over the lazy dog. 0123456789.";
 
   return (
     <div
@@ -375,36 +405,113 @@ export const ContentBlockCreateModal: React.FC<
               </select>
             </div>
 
-            <div className={styles.formGroup}>
-              <label htmlFor="create-block-title" className={styles.label}>
-                Title (Optional)
-              </label>
-              <input
-                ref={titleInputRef}
-                id="create-block-title"
-                type="text"
-                className={styles.input}
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                disabled={isSubmitting}
-                placeholder="e.g. Festival Highlights"
-              />
+            {/* Language Tabs */}
+            <div
+              className={styles.langTabs}
+              role="tablist"
+              aria-label="Language selection"
+            >
+              <button
+                type="button"
+                role="tab"
+                aria-selected={activeTab === "en"}
+                className={`${styles.langTab} ${activeTab === "en" ? styles.activeLangTab : ""}`}
+                onClick={() => setActiveTab("en")}
+              >
+                🇬🇧 English
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={activeTab === "de"}
+                className={`${styles.langTab} ${activeTab === "de" ? styles.activeLangTab : ""}`}
+                onClick={() => setActiveTab("de")}
+              >
+                🇩🇪 Deutsch
+              </button>
             </div>
 
-            <div className={styles.formGroup}>
-              <label htmlFor="create-block-text" className={styles.label}>
-                Text Content *
-              </label>
-              <textarea
-                id="create-block-text"
-                className={styles.textarea}
-                value={text}
-                onChange={(e) => setText(e.target.value)}
-                disabled={isSubmitting}
-                required
-                placeholder="Enter block paragraph content..."
-              />
-            </div>
+            {activeTab === "en" ? (
+              <>
+                <div className={styles.formGroup}>
+                  <label
+                    htmlFor="create-block-en-title"
+                    className={styles.label}
+                  >
+                    Title (Optional)
+                  </label>
+                  <input
+                    ref={enTitleInputRef}
+                    id="create-block-en-title"
+                    type="text"
+                    className={styles.input}
+                    value={enTitle}
+                    onChange={(e) => setEnTitle(e.target.value)}
+                    disabled={isSubmitting}
+                    placeholder="e.g. Festival Highlights"
+                  />
+                </div>
+
+                <div className={styles.formGroup}>
+                  <label
+                    htmlFor="create-block-en-text"
+                    className={styles.label}
+                  >
+                    Text Content *
+                  </label>
+                  <textarea
+                    id="create-block-en-text"
+                    className={styles.textarea}
+                    value={enText}
+                    onChange={(e) => setEnText(e.target.value)}
+                    disabled={isSubmitting}
+                    required
+                    placeholder="Enter block paragraph content..."
+                  />
+                </div>
+              </>
+            ) : (
+              <>
+                <div className={styles.missingNotice}>
+                  German translation is optional. If provided, German text is
+                  required.
+                </div>
+                <div className={styles.formGroup}>
+                  <label
+                    htmlFor="create-block-de-title"
+                    className={styles.label}
+                  >
+                    German Title (Optional)
+                  </label>
+                  <input
+                    id="create-block-de-title"
+                    type="text"
+                    className={styles.input}
+                    value={deTitle}
+                    onChange={(e) => setDeTitle(e.target.value)}
+                    disabled={isSubmitting}
+                    placeholder="z.B. Festival-Highlights"
+                  />
+                </div>
+
+                <div className={styles.formGroup}>
+                  <label
+                    htmlFor="create-block-de-text"
+                    className={styles.label}
+                  >
+                    German Text Content
+                  </label>
+                  <textarea
+                    id="create-block-de-text"
+                    className={styles.textarea}
+                    value={deText}
+                    onChange={(e) => setDeText(e.target.value)}
+                    disabled={isSubmitting}
+                    placeholder="Deutschen Text hier eingeben..."
+                  />
+                </div>
+              </>
+            )}
 
             {/* Typography Controls */}
             <div className={styles.formGroup}>
@@ -465,9 +572,7 @@ export const ContentBlockCreateModal: React.FC<
                   className={`${publicBlockStyles.blockText} ${FONT_FAMILY_CLASS[fontFamily]} ${FONT_SIZE_CLASS[fontSize]}`}
                   style={{ margin: 0 }}
                 >
-                  {text.trim()
-                    ? text
-                    : "The quick brown fox jumps over the lazy dog. 0123456789."}
+                  {previewText}
                 </p>
               </div>
             </div>
