@@ -9,6 +9,8 @@ export const validPublicPageResponse = {
       seo_keywords: ["saxophone", "ensemble", "music"],
     },
     appearance: {
+      background_mode: "none",
+      background_color: "#FFFFFF",
       background_media: null,
       overlay_opacity: 0.35,
       background_position: "center",

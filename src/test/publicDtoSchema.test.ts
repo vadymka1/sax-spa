@@ -108,15 +108,17 @@ describe("Public DTO Schema Validation", () => {
       data: {
         ...validPublicPageResponse.data,
         appearance: {
+          background_mode: "image" as const,
+          background_color: "#FFFFFF",
           background_media: {
             id: "11111111-1111-4111-8111-111111111111",
-            type: "image",
+            type: "image" as const,
             url: "https://api.enstisax.com/uploads/bg.webp",
             alt_text: "Ensemble background",
           },
           overlay_opacity: 0.4,
-          background_position: "top",
-          background_size: "cover",
+          background_position: "top" as const,
+          background_size: "cover" as const,
         },
       },
     };
@@ -124,6 +126,8 @@ describe("Public DTO Schema Validation", () => {
     const result = PublicPageEnvelopeSchema.safeParse(validWithBg);
     expect(result.success).toBe(true);
     if (result.success) {
+      expect(result.data.data.appearance.background_mode).toBe("image");
+      expect(result.data.data.appearance.background_color).toBe("#FFFFFF");
       expect(result.data.data.appearance.background_media?.type).toBe("image");
       expect(result.data.data.appearance.background_media?.url).toBe(
         "https://api.enstisax.com/uploads/bg.webp",
@@ -136,13 +140,15 @@ describe("Public DTO Schema Validation", () => {
       data: {
         ...validPublicPageResponse.data,
         appearance: {
+          background_mode: "image" as const,
+          background_color: "#FFFFFF",
           background_media: {
             id: "11111111-1111-4111-8111-111111111111",
             url: "https://api.enstisax.com/uploads/bg.webp",
           },
           overlay_opacity: 0.35,
-          background_position: "center",
-          background_size: "cover",
+          background_position: "center" as const,
+          background_size: "cover" as const,
         },
       },
     };
@@ -158,14 +164,16 @@ describe("Public DTO Schema Validation", () => {
       data: {
         ...validPublicPageResponse.data,
         appearance: {
+          background_mode: "image" as const,
+          background_color: "#FFFFFF",
           background_media: {
             id: "11111111-1111-4111-8111-111111111111",
             media_type: "image",
             url: "https://api.enstisax.com/uploads/bg.webp",
           },
           overlay_opacity: 0.35,
-          background_position: "center",
-          background_size: "cover",
+          background_position: "center" as const,
+          background_size: "cover" as const,
         },
       },
     };
@@ -179,14 +187,16 @@ describe("Public DTO Schema Validation", () => {
       data: {
         ...validPublicPageResponse.data,
         appearance: {
+          background_mode: "image" as const,
+          background_color: "#FFFFFF",
           background_media: {
             id: "11111111-1111-4111-8111-111111111111",
             type: "video",
             url: "https://api.enstisax.com/uploads/video.mp4",
           },
           overlay_opacity: 0.35,
-          background_position: "center",
-          background_size: "cover",
+          background_position: "center" as const,
+          background_size: "cover" as const,
         },
       },
     };
@@ -199,14 +209,16 @@ describe("Public DTO Schema Validation", () => {
       data: {
         ...validPublicPageResponse.data,
         appearance: {
+          background_mode: "image" as const,
+          background_color: "#FFFFFF",
           background_media: {
             id: "11111111-1111-4111-8111-111111111111",
             type: "youtube",
             url: "https://www.youtube.com/watch?v=123",
           },
           overlay_opacity: 0.35,
-          background_position: "center",
-          background_size: "cover",
+          background_position: "center" as const,
+          background_size: "cover" as const,
         },
       },
     };
@@ -214,5 +226,79 @@ describe("Public DTO Schema Validation", () => {
     expect(
       PublicPageEnvelopeSchema.safeParse(invalidYoutubeResponse).success,
     ).toBe(false);
+  });
+
+  it("Section 45: validates canonical BackgroundColor and rejects invalid hex strings", () => {
+    // Valid canonical #RRGGBB
+    for (const validColor of ["#FFFFFF", "#F4EFE8", "#000000"]) {
+      const resp = {
+        data: {
+          ...validPublicPageResponse.data,
+          appearance: {
+            background_mode: "color" as const,
+            background_color: validColor,
+            background_media: null,
+            overlay_opacity: 0.35,
+            background_position: "center" as const,
+            background_size: "cover" as const,
+          },
+        },
+      };
+      expect(PublicPageEnvelopeSchema.safeParse(resp).success).toBe(true);
+    }
+
+    // Invalid hex strings
+    for (const invalidColor of ["#fff", "FFFFFF", "red", "#12345G", ""]) {
+      const resp = {
+        data: {
+          ...validPublicPageResponse.data,
+          appearance: {
+            background_mode: "color" as const,
+            background_color: invalidColor,
+            background_media: null,
+            overlay_opacity: 0.35,
+            background_position: "center" as const,
+            background_size: "cover" as const,
+          },
+        },
+      };
+      expect(PublicPageEnvelopeSchema.safeParse(resp).success).toBe(false);
+    }
+  });
+
+  it("validates BackgroundMode enum values (none, color, image) and rejects unknown values", () => {
+    for (const mode of ["none", "color", "image"] as const) {
+      const resp = {
+        data: {
+          ...validPublicPageResponse.data,
+          appearance: {
+            background_mode: mode,
+            background_color: "#FFFFFF",
+            background_media: null,
+            overlay_opacity: 0.35,
+            background_position: "center" as const,
+            background_size: "cover" as const,
+          },
+        },
+      };
+      expect(PublicPageEnvelopeSchema.safeParse(resp).success).toBe(true);
+    }
+
+    const invalidModeResp = {
+      data: {
+        ...validPublicPageResponse.data,
+        appearance: {
+          background_mode: "gradient",
+          background_color: "#FFFFFF",
+          background_media: null,
+          overlay_opacity: 0.35,
+          background_position: "center" as const,
+          background_size: "cover" as const,
+        },
+      },
+    };
+    expect(PublicPageEnvelopeSchema.safeParse(invalidModeResp).success).toBe(
+      false,
+    );
   });
 });

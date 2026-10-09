@@ -242,10 +242,12 @@ describe("FRONTEND TESTIMONIALS V2 — PUBLIC SUBMISSION + ADMIN MODERATION + CA
         seo_keywords: [],
       },
       appearance: {
+        background_mode: "none" as const,
+        background_color: "#FFFFFF",
         background_media: null,
         overlay_opacity: 0.35,
-        background_position: "center",
-        background_size: "cover",
+        background_position: "center" as const,
+        background_size: "cover" as const,
       },
       sections: [
         {
@@ -653,10 +655,12 @@ describe("FRONTEND TESTIMONIALS V2 — PUBLIC SUBMISSION + ADMIN MODERATION + CA
           seo_keywords: [],
         },
         appearance: {
+          background_mode: "none" as const,
+          background_color: "#FFFFFF",
           background_media: null,
           overlay_opacity: 0.35,
-          background_position: "center",
-          background_size: "cover",
+          background_position: "center" as const,
+          background_size: "cover" as const,
         },
         sections: [
           {

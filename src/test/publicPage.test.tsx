@@ -24,6 +24,8 @@ const mockDynamicPublicPageResponse = {
       seo_keywords: ["saxophone"],
     },
     appearance: {
+      background_mode: "none" as const,
+      background_color: "#FFFFFF",
       background_media: null,
       overlay_opacity: 0.35,
       background_position: "center" as const,
@@ -88,6 +90,8 @@ const mockTwelveSectionsPublicPageResponse = {
       seo_keywords: ["saxophone"],
     },
     appearance: {
+      background_mode: "none" as const,
+      background_color: "#FFFFFF",
       background_media: null,
       overlay_opacity: 0.35,
       background_position: "center" as const,
@@ -479,10 +483,12 @@ describe("PublicPage Feature F2", () => {
               title: "Empty Saxophone Page",
             },
             appearance: {
+              background_mode: "none" as const,
+              background_color: "#FFFFFF",
               background_media: null,
               overlay_opacity: 0.35,
-              background_position: "center",
-              background_size: "cover",
+              background_position: "center" as const,
+              background_size: "cover" as const,
             },
             sections: [],
             testimonials: [],
@@ -644,10 +650,12 @@ describe("PublicPage Feature F2", () => {
           seo_title: "Full Media Page",
         },
         appearance: {
+          background_mode: "none" as const,
+          background_color: "#FFFFFF",
           background_media: null,
           overlay_opacity: 0.35,
-          background_position: "center",
-          background_size: "cover",
+          background_position: "center" as const,
+          background_size: "cover" as const,
         },
         sections: [
           {

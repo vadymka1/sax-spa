@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
+  BackgroundMode,
   BackgroundPosition,
   BackgroundSize,
   UpdatePageAppearanceRequest,
@@ -16,9 +17,23 @@ import styles from "./appearance.module.css";
 
 const ALLOWED_IMAGE_MIME_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
+const isValidHexColor = (val: string): boolean => {
+  return /^#[0-9A-Fa-f]{6}$/.test(val.trim());
+};
+
+const normalizeHexColor = (val: string): string => {
+  return val.trim().toUpperCase();
+};
+
 export const PageAppearancePage: React.FC = () => {
   const { data, isLoading, error, refetch } = usePageAppearance();
   const updateMutation = useUpdatePageAppearance();
+
+  const [backgroundMode, setBackgroundMode] = useState<BackgroundMode>("none");
+  const [backgroundColor, setBackgroundColor] = useState<string>("#FFFFFF");
+  const [colorInput, setColorInput] = useState<string>("#FFFFFF");
+  const [colorError, setColorError] = useState<string | null>(null);
+  const [modeError, setModeError] = useState<string | null>(null);
 
   const [overlayOpacity, setOverlayOpacity] = useState<number>(0.35);
   const [backgroundPosition, setBackgroundPosition] =
@@ -30,12 +45,18 @@ export const PageAppearancePage: React.FC = () => {
     null,
   );
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [uploadNotice, setUploadNotice] = useState<string | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   // Sync state when data loads or updates
   useEffect(() => {
     if (data) {
+      setBackgroundMode(data.background_mode);
+      setBackgroundColor(data.background_color);
+      setColorInput(data.background_color);
+      setColorError(null);
+      setModeError(null);
       setOverlayOpacity(data.overlay_opacity);
       setBackgroundPosition(data.background_position);
       setBackgroundSize(data.background_size);
@@ -47,12 +68,66 @@ export const PageAppearancePage: React.FC = () => {
     if (!data) return false;
     const currentRounded = Math.round(overlayOpacity * 100) / 100;
     const dataRounded = Math.round(data.overlay_opacity * 100) / 100;
+
+    const isColorValid = isValidHexColor(colorInput);
+    const isColorChanged =
+      isColorValid && normalizeHexColor(colorInput) !== data.background_color;
+
     return (
+      backgroundMode !== data.background_mode ||
+      isColorChanged ||
       currentRounded !== dataRounded ||
       backgroundPosition !== data.background_position ||
       backgroundSize !== data.background_size
     );
-  }, [data, overlayOpacity, backgroundPosition, backgroundSize]);
+  }, [
+    data,
+    backgroundMode,
+    colorInput,
+    overlayOpacity,
+    backgroundPosition,
+    backgroundSize,
+  ]);
+
+  const handleModeChange = (mode: BackgroundMode) => {
+    setSaveSuccess(false);
+    setUploadNotice(null);
+    if (mode === "image") {
+      if (!data?.background_media) {
+        setBackgroundMode("image");
+        setModeError("Upload an image before switching to Image mode.");
+        return;
+      }
+    }
+    setBackgroundMode(mode);
+    setModeError(null);
+  };
+
+  const handleColorPickerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const hex = e.target.value.toUpperCase();
+    setColorInput(hex);
+    setBackgroundColor(hex);
+    setColorError(null);
+    setSaveSuccess(false);
+    setUploadNotice(null);
+  };
+
+  const handleColorInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setColorInput(val);
+    setSaveSuccess(false);
+    setUploadNotice(null);
+
+    if (isValidHexColor(val)) {
+      const normalized = normalizeHexColor(val);
+      setBackgroundColor(normalized);
+      setColorError(null);
+    } else {
+      setColorError(
+        "Color must be a valid 6-character hex code (e.g. #F4EFE8)",
+      );
+    }
+  };
 
   const handleFileClick = () => {
     if (fileInputRef.current) {
@@ -75,13 +150,21 @@ export const PageAppearancePage: React.FC = () => {
     setIsUploading(true);
     setUploadError(null);
     setSaveSuccess(false);
+    setUploadNotice(null);
 
     try {
       const uploadedMedia = await mediaApi.uploadImageMedia(file);
       await updateMutation.mutateAsync({
         background_media_id: uploadedMedia.id,
       });
-      setSaveSuccess(true);
+      if (backgroundMode !== "image") {
+        setUploadNotice(
+          "Image uploaded. Select “Image” to use it as the active background.",
+        );
+      } else {
+        setSaveSuccess(true);
+      }
+      setModeError(null);
     } catch (err) {
       if (isAppApiError(err)) {
         setUploadError(err);
@@ -100,11 +183,22 @@ export const PageAppearancePage: React.FC = () => {
     if (isUploading || updateMutation.isPending) return;
     setUploadError(null);
     setSaveSuccess(false);
+    setUploadNotice(null);
+
     try {
-      await updateMutation.mutateAsync({
-        background_media_id: null,
-      });
+      if (backgroundMode === "image") {
+        await updateMutation.mutateAsync({
+          background_mode: "none",
+          background_media_id: null,
+        });
+        setBackgroundMode("none");
+      } else {
+        await updateMutation.mutateAsync({
+          background_media_id: null,
+        });
+      }
       setSaveSuccess(true);
+      setModeError(null);
     } catch (err) {
       if (isAppApiError(err)) {
         setUploadError(err);
@@ -118,10 +212,34 @@ export const PageAppearancePage: React.FC = () => {
 
   const handleSaveSettings = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!data || !isDirty || updateMutation.isPending || isUploading) return;
+    if (!data || updateMutation.isPending || isUploading) return;
+
+    if (!isValidHexColor(colorInput)) {
+      setColorError(
+        "Color must be a valid 6-character hex code (e.g. #F4EFE8)",
+      );
+      return;
+    }
+
+    if (backgroundMode === "image" && !data.background_media) {
+      setModeError("Upload an image before switching to Image mode.");
+      return;
+    }
+
+    if (!isDirty) return;
 
     setSaveSuccess(false);
+    setUploadNotice(null);
     const patch: UpdatePageAppearanceRequest = {};
+
+    if (backgroundMode !== data.background_mode) {
+      patch.background_mode = backgroundMode;
+    }
+
+    const normalized = normalizeHexColor(colorInput);
+    if (normalized !== data.background_color) {
+      patch.background_color = normalized;
+    }
 
     const currentRounded = Math.round(overlayOpacity * 100) / 100;
     const dataRounded = Math.round(data.overlay_opacity * 100) / 100;
@@ -139,8 +257,9 @@ export const PageAppearancePage: React.FC = () => {
     try {
       await updateMutation.mutateAsync(patch);
       setSaveSuccess(true);
+      setModeError(null);
+      setColorError(null);
     } catch {
-      // Error is tracked via updateMutation.error
       setSaveSuccess(false);
     }
   };
@@ -188,14 +307,44 @@ export const PageAppearancePage: React.FC = () => {
 
   const hasBackground = Boolean(data.background_media);
 
+  const previewBgColor = isValidHexColor(colorInput)
+    ? normalizeHexColor(colorInput)
+    : data.background_color;
+
+  let previewBgStyle: React.CSSProperties = {};
+  let showPreviewOverlay = false;
+
+  if (backgroundMode === "none") {
+    previewBgStyle = {
+      backgroundColor: "var(--color-public-bg)",
+      backgroundImage: "none",
+    };
+  } else if (backgroundMode === "color") {
+    previewBgStyle = {
+      backgroundColor: previewBgColor,
+      backgroundImage: "none",
+    };
+  } else if (backgroundMode === "image") {
+    previewBgStyle = {
+      backgroundColor: previewBgColor,
+      backgroundImage: data.background_media
+        ? `url(${data.background_media.url})`
+        : "none",
+      backgroundPosition,
+      backgroundSize,
+      backgroundRepeat: "no-repeat",
+    };
+    showPreviewOverlay = Boolean(data.background_media);
+  }
+
   return (
     <div className={styles.container}>
       <header className={styles.header}>
         <div>
           <h2 className={styles.title}>Page Appearance</h2>
           <p className={styles.subtitle}>
-            Configure the background image, overlay opacity, and positioning for
-            the public page.
+            Configure the background mode, color, image, overlay opacity, and
+            positioning for the public page.
           </p>
         </div>
       </header>
@@ -206,10 +355,113 @@ export const PageAppearancePage: React.FC = () => {
         </div>
       )}
 
+      {uploadNotice && (
+        <div className={styles.successNotice} role="status">
+          ✓ {uploadNotice}
+        </div>
+      )}
+
       {uploadError && <ErrorMessage error={uploadError} />}
       {!uploadError && updateMutation.error && (
         <ErrorMessage error={updateMutation.error} />
       )}
+
+      {/* Background Type Selector Card */}
+      <section className={styles.card}>
+        <h3 className={styles.cardTitle}>Background Type</h3>
+        <p className={styles.cardSubtitle}>
+          Choose whether the site uses the default editorial background, a solid
+          color, or a photography background.
+        </p>
+
+        <div
+          className={styles.segmentedGroup}
+          role="radiogroup"
+          aria-label="Background Type"
+        >
+          {(
+            [
+              { mode: "none", label: "Default" },
+              { mode: "color", label: "Color" },
+              { mode: "image", label: "Image" },
+            ] as const
+          ).map(({ mode, label }) => {
+            const isSelected = backgroundMode === mode;
+            return (
+              <button
+                key={mode}
+                type="button"
+                role="radio"
+                aria-checked={isSelected}
+                className={`${styles.segmentedOption} ${
+                  isSelected ? styles.segmentedOptionActive : ""
+                }`}
+                onClick={() => handleModeChange(mode)}
+                data-testid={`appearance-mode-${mode}`}
+              >
+                {label}
+              </button>
+            );
+          })}
+        </div>
+
+        {modeError && (
+          <div
+            className={styles.fieldError}
+            data-testid="appearance-mode-error"
+          >
+            {modeError}
+          </div>
+        )}
+      </section>
+
+      {/* Background Color Card */}
+      <section className={styles.card}>
+        <h3 className={styles.cardTitle}>
+          {backgroundMode === "image"
+            ? "Fallback / Base Color"
+            : "Background Color"}
+        </h3>
+        <p className={styles.cardSubtitle}>
+          {backgroundMode === "image"
+            ? "Used while the image loads or if it cannot be displayed."
+            : "Select a solid background color for the public page."}
+        </p>
+
+        <div className={styles.colorControlsRow}>
+          <input
+            type="color"
+            value={
+              isValidHexColor(colorInput)
+                ? normalizeHexColor(colorInput)
+                : backgroundColor
+            }
+            onChange={handleColorPickerChange}
+            className={styles.colorPickerInput}
+            aria-label="Background color picker"
+            data-testid="appearance-color-picker"
+          />
+          <input
+            type="text"
+            value={colorInput}
+            onChange={handleColorInputChange}
+            placeholder="#FFFFFF"
+            maxLength={7}
+            className={styles.colorTextInput}
+            aria-label="Background hex color code"
+            data-testid="appearance-color-input"
+          />
+        </div>
+
+        {colorError && (
+          <div
+            className={styles.fieldError}
+            data-testid="appearance-color-error"
+          >
+            {colorError}
+          </div>
+        )}
+      </section>
 
       {/* Background Image Card */}
       <section className={styles.card}>
@@ -285,7 +537,7 @@ export const PageAppearancePage: React.FC = () => {
           </label>
           <span className={styles.helperText}>
             A soft ivory overlay ensures contrast and readability over the
-            background image.
+            background image. Active in Image mode.
           </span>
           <div className={styles.sliderRow}>
             <input
@@ -298,7 +550,9 @@ export const PageAppearancePage: React.FC = () => {
               onChange={(e) => {
                 setOverlayOpacity(Number(e.target.value) / 100);
                 setSaveSuccess(false);
+                setUploadNotice(null);
               }}
+              disabled={backgroundMode !== "image"}
               className={styles.rangeSlider}
               aria-label="Overlay opacity"
               aria-valuemin={0}
@@ -334,12 +588,14 @@ export const PageAppearancePage: React.FC = () => {
                   type="button"
                   role="radio"
                   aria-checked={isSelected}
+                  disabled={backgroundMode !== "image"}
                   className={`${styles.segmentedOption} ${
                     isSelected ? styles.segmentedOptionActive : ""
                   }`}
                   onClick={() => {
                     setBackgroundPosition(pos);
                     setSaveSuccess(false);
+                    setUploadNotice(null);
                   }}
                   data-testid={`appearance-position-${pos}`}
                 >
@@ -357,7 +613,7 @@ export const PageAppearancePage: React.FC = () => {
           </label>
           <span className={styles.helperText}>
             Cover fills the entire screen (may crop edges); Contain shows the
-            full image without cropping.
+            full image without cropping. Active in Image mode.
           </span>
           <div
             className={styles.segmentedGroup}
@@ -373,12 +629,14 @@ export const PageAppearancePage: React.FC = () => {
                   type="button"
                   role="radio"
                   aria-checked={isSelected}
+                  disabled={backgroundMode !== "image"}
                   className={`${styles.segmentedOption} ${
                     isSelected ? styles.segmentedOptionActive : ""
                   }`}
                   onClick={() => {
                     setBackgroundSize(sz);
                     setSaveSuccess(false);
+                    setUploadNotice(null);
                   }}
                   data-testid={`appearance-size-${sz}`}
                 >
@@ -389,33 +647,28 @@ export const PageAppearancePage: React.FC = () => {
           </div>
         </div>
 
-        {/* Live Preview Card */}
+        {/* Live Preview */}
         <div className={styles.formGroup}>
           <span className={styles.label}>Live Preview</span>
           <span className={styles.helperText}>
-            Preview reacts immediately to slider and position controls before
-            saving.
+            Preview reacts immediately to mode, color, slider, and position
+            controls before saving.
           </span>
           <div
             className={styles.previewContainer}
-            style={{
-              backgroundImage: data.background_media
-                ? `url(${data.background_media.url})`
-                : "none",
-              backgroundPosition,
-              backgroundSize,
-              backgroundRepeat: "no-repeat",
-            }}
+            style={previewBgStyle}
             data-testid="appearance-live-preview"
           >
-            <div
-              className={styles.previewOverlay}
-              style={{
-                opacity: overlayOpacity,
-              }}
-              aria-hidden="true"
-              data-testid="appearance-preview-overlay"
-            />
+            {showPreviewOverlay && (
+              <div
+                className={styles.previewOverlay}
+                style={{
+                  opacity: overlayOpacity,
+                }}
+                aria-hidden="true"
+                data-testid="appearance-preview-overlay"
+              />
+            )}
             <div className={styles.previewContent}>
               <div className={styles.previewHeader}>
                 <span className={styles.previewBrand}>SPA Saxophone</span>

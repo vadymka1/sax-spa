@@ -118,6 +118,15 @@ export const BACKGROUND_SIZE_VALUES = ["cover", "contain"] as const;
 export const BackgroundSizeSchema = z.enum(BACKGROUND_SIZE_VALUES);
 export type BackgroundSize = z.infer<typeof BackgroundSizeSchema>;
 
+export const BACKGROUND_MODE_VALUES = ["none", "color", "image"] as const;
+export const BackgroundModeSchema = z.enum(BACKGROUND_MODE_VALUES);
+export type BackgroundMode = z.infer<typeof BackgroundModeSchema>;
+
+export const BackgroundColorSchema = z
+  .string()
+  .regex(/^#[0-9A-F]{6}$/, "Must be canonical hex color #RRGGBB");
+export type BackgroundColor = z.infer<typeof BackgroundColorSchema>;
+
 export const PageAppearanceMediaSchema = z
   .object({
     id: z.string().uuid(),
@@ -129,6 +138,8 @@ export const PageAppearanceMediaSchema = z
 export type PageAppearanceMedia = z.infer<typeof PageAppearanceMediaSchema>;
 
 export const PublicPageAppearanceDtoSchema = z.object({
+  background_mode: BackgroundModeSchema,
+  background_color: BackgroundColorSchema,
   background_media: PageAppearanceMediaSchema.nullable(),
   overlay_opacity: z.number().min(0).max(1),
   background_position: BackgroundPositionSchema,
@@ -685,6 +696,8 @@ export type PublicMediaDto = PublicMedia;
 
 // Admin Page Appearance DTO Schemas & Types
 export const AdminPageAppearanceDtoSchema = z.object({
+  background_mode: BackgroundModeSchema,
+  background_color: BackgroundColorSchema,
   background_media: PageAppearanceMediaSchema.nullable(),
   overlay_opacity: z.number().min(0).max(1),
   background_position: BackgroundPositionSchema,
@@ -696,6 +709,8 @@ export type AdminPageAppearanceDto = z.infer<
 export type PageAppearance = AdminPageAppearanceDto;
 
 export const UpdatePageAppearanceRequestSchema = z.object({
+  background_mode: BackgroundModeSchema.optional(),
+  background_color: BackgroundColorSchema.optional(),
   background_media_id: z.string().uuid().nullable().optional(),
   overlay_opacity: z.number().min(0).max(1).optional(),
   background_position: BackgroundPositionSchema.optional(),

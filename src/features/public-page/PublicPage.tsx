@@ -55,16 +55,23 @@ const PublicPageInner: React.FC = () => {
   }
 
   const appearance = data.appearance;
-  const hasBackground = Boolean(appearance?.background_media);
+  const mode = appearance?.background_mode ?? "none";
 
-  const backgroundStyle: React.CSSProperties = hasBackground
-    ? {
-        backgroundImage: `url(${appearance.background_media!.url})`,
-        backgroundPosition: appearance.background_position,
-        backgroundSize: appearance.background_size,
-        backgroundRepeat: "no-repeat",
-      }
-    : {};
+  const backgroundStyle: React.CSSProperties = {};
+  let showOverlay = false;
+
+  if (mode === "color") {
+    backgroundStyle.backgroundColor = appearance.background_color;
+  } else if (mode === "image") {
+    backgroundStyle.backgroundColor = appearance.background_color;
+    if (appearance.background_media) {
+      backgroundStyle.backgroundImage = `url(${appearance.background_media.url})`;
+      backgroundStyle.backgroundPosition = appearance.background_position;
+      backgroundStyle.backgroundSize = appearance.background_size;
+      backgroundStyle.backgroundRepeat = "no-repeat";
+      showOverlay = true;
+    }
+  }
 
   return (
     <div
@@ -72,7 +79,7 @@ const PublicPageInner: React.FC = () => {
       style={backgroundStyle}
       data-testid="public-page-wrapper"
     >
-      {hasBackground && (
+      {showOverlay && (
         <div
           className={styles.pageOverlay}
           style={{ opacity: appearance.overlay_opacity }}

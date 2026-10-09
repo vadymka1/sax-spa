@@ -205,10 +205,12 @@ describe("FRONTEND AUDIT — Testimonials Feature Pass", () => {
           title: "SPA Saxophone Ensemble",
         },
         appearance: {
+          background_mode: "none" as const,
+          background_color: "#FFFFFF",
           background_media: null,
           overlay_opacity: 0.35,
-          background_position: "center",
-          background_size: "cover",
+          background_position: "center" as const,
+          background_size: "cover" as const,
         },
         sections: [],
         testimonials: [
@@ -825,10 +827,12 @@ describe("FRONTEND AUDIT — Testimonials Feature Pass", () => {
             title: "SPA Saxophone Ensemble",
           },
           appearance: {
+            background_mode: "none" as const,
+            background_color: "#FFFFFF",
             background_media: null,
             overlay_opacity: 0.35,
-            background_position: "center",
-            background_size: "cover",
+            background_position: "center" as const,
+            background_size: "cover" as const,
           },
           sections: includeSection
             ? [
