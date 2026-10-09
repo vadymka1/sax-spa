@@ -30,6 +30,17 @@ const mockAdminUser = {
 };
 
 const defaultAppearanceDto: AdminPageAppearanceDto = {
+  background_mode: "none",
+  background_color: "#FFFFFF",
+  background_media: null,
+  overlay_opacity: 0.35,
+  background_position: "center",
+  background_size: "cover",
+};
+
+const colorAppearanceDto: AdminPageAppearanceDto = {
+  background_mode: "color",
+  background_color: "#F4EFE8",
   background_media: null,
   overlay_opacity: 0.35,
   background_position: "center",
@@ -37,6 +48,8 @@ const defaultAppearanceDto: AdminPageAppearanceDto = {
 };
 
 const existingAppearanceDto: AdminPageAppearanceDto = {
+  background_mode: "image",
+  background_color: "#F4EFE8",
   background_media: {
     id: "99999999-9999-4999-8999-999999999999",
     type: "image",
@@ -118,35 +131,39 @@ function renderPublicView() {
   );
 }
 
-describe("Page Appearance Feature V1", () => {
-  const originalAdapter = apiClient.defaults.adapter;
-
+describe("Page Appearance Feature V1.2 — Background Mode and Solid Color", () => {
   beforeEach(() => {
-    apiClient.defaults.adapter = "fetch";
-    authSession.setAccessToken("valid-access-token");
+    localStorage.clear();
+    sessionStorage.clear();
+    authSession.setAccessToken("mock-admin-token");
     authSession.resetCheckedState();
+    apiClient.defaults.headers.common["Authorization"] =
+      "Bearer mock-admin-token";
+
+    // Standard MSW handlers
     server.use(
       http.get(`${env.apiBaseUrl}/api/v1/auth/me`, () => {
         return HttpResponse.json({ data: mockAdminUser });
       }),
-      http.get(
-        `${env.apiBaseUrl}/api/v1/admin/contact-messages/unread-count`,
-        () => {
-          return HttpResponse.json({ data: { unread_count: 0 } });
-        },
-      ),
+      http.post(`${env.apiBaseUrl}/api/v1/auth/refresh`, () => {
+        return HttpResponse.json({
+          data: {
+            user: mockAdminUser,
+            access_token: "mock-admin-token",
+          },
+        });
+      }),
     );
   });
 
   afterEach(() => {
-    apiClient.defaults.adapter = originalAdapter;
     authSession.clearSession();
-    authSession.resetCheckedState();
+    delete apiClient.defaults.headers.common["Authorization"];
     vi.restoreAllMocks();
   });
 
-  describe("Schema Validation", () => {
-    it("validates default and configured AdminPageAppearanceDto against Zod schema", () => {
+  describe("Appearance DTO Schema Validation", () => {
+    it("parses valid default appearance DTO and image appearance DTO", () => {
       expect(() =>
         AdminPageAppearanceDtoSchema.parse(defaultAppearanceDto),
       ).not.toThrow();
@@ -155,8 +172,10 @@ describe("Page Appearance Feature V1", () => {
       ).not.toThrow();
     });
 
-    it("Section 11 & 12: parses valid image with type: 'image' and null background", () => {
+    it("parses valid image with type: 'image' and null background", () => {
       const validImageAppearance = {
+        background_mode: "image",
+        background_color: "#FFFFFF",
         background_media: {
           id: "99999999-9999-4999-8999-999999999999",
           type: "image",
@@ -172,6 +191,8 @@ describe("Page Appearance Feature V1", () => {
       ).not.toThrow();
 
       const nullBackground = {
+        background_mode: "none",
+        background_color: "#FFFFFF",
         background_media: null,
         overlay_opacity: 0.35,
         background_position: "center",
@@ -182,8 +203,10 @@ describe("Page Appearance Feature V1", () => {
       ).not.toThrow();
     });
 
-    it("Section 13: rejects background_media with missing discriminator", () => {
+    it("rejects background_media with missing discriminator", () => {
       const missingDiscriminator = {
+        background_mode: "image",
+        background_color: "#FFFFFF",
         background_media: {
           id: "99999999-9999-4999-8999-999999999999",
           url: "https://api.enstisax.com/uploads/bg.webp",
@@ -197,8 +220,10 @@ describe("Page Appearance Feature V1", () => {
       ).toThrow();
     });
 
-    it("Section 14: rejects background_media with non-image discriminator (video, youtube)", () => {
+    it("rejects background_media with non-image discriminator (video, youtube)", () => {
       const videoDiscriminator = {
+        background_mode: "image",
+        background_color: "#FFFFFF",
         background_media: {
           id: "99999999-9999-4999-8999-999999999999",
           type: "video",
@@ -213,6 +238,8 @@ describe("Page Appearance Feature V1", () => {
       ).toThrow();
 
       const youtubeDiscriminator = {
+        background_mode: "image",
+        background_color: "#FFFFFF",
         background_media: {
           id: "99999999-9999-4999-8999-999999999999",
           type: "youtube",
@@ -227,8 +254,10 @@ describe("Page Appearance Feature V1", () => {
       ).toThrow();
     });
 
-    it("Section 15: rejects legacy media_type shape without type: 'image'", () => {
+    it("rejects legacy media_type shape without type: 'image'", () => {
       const legacyMediaType = {
+        background_mode: "image",
+        background_color: "#FFFFFF",
         background_media: {
           id: "99999999-9999-4999-8999-999999999999",
           media_type: "image",
@@ -242,10 +271,64 @@ describe("Page Appearance Feature V1", () => {
         AdminPageAppearanceDtoSchema.parse(legacyMediaType),
       ).toThrow();
     });
+
+    it("Section 45: validates canonical BackgroundColor and rejects invalid hex strings", () => {
+      for (const validColor of ["#FFFFFF", "#F4EFE8", "#000000"]) {
+        expect(() =>
+          AdminPageAppearanceDtoSchema.parse({
+            background_mode: "color",
+            background_color: validColor,
+            background_media: null,
+            overlay_opacity: 0.35,
+            background_position: "center",
+            background_size: "cover",
+          }),
+        ).not.toThrow();
+      }
+
+      for (const invalidColor of ["#fff", "FFFFFF", "red", "#12345G", ""]) {
+        expect(() =>
+          AdminPageAppearanceDtoSchema.parse({
+            background_mode: "color",
+            background_color: invalidColor,
+            background_media: null,
+            overlay_opacity: 0.35,
+            background_position: "center",
+            background_size: "cover",
+          }),
+        ).toThrow();
+      }
+    });
+
+    it("validates BackgroundMode enum values (none, color, image) and rejects invalid modes", () => {
+      for (const mode of ["none", "color", "image"] as const) {
+        expect(() =>
+          AdminPageAppearanceDtoSchema.parse({
+            background_mode: mode,
+            background_color: "#FFFFFF",
+            background_media: null,
+            overlay_opacity: 0.35,
+            background_position: "center",
+            background_size: "cover",
+          }),
+        ).not.toThrow();
+      }
+
+      expect(() =>
+        AdminPageAppearanceDtoSchema.parse({
+          background_mode: "pattern",
+          background_color: "#FFFFFF",
+          background_media: null,
+          overlay_opacity: 0.35,
+          background_position: "center",
+          background_size: "cover",
+        }),
+      ).toThrow();
+    });
   });
 
   describe("Admin Appearance UI — Initial Load & Controls", () => {
-    it("loads default settings (null background, 35% opacity, center, cover)", async () => {
+    it("Section 46: loads default settings (none mode, #FFFFFF, null background)", async () => {
       server.use(
         http.get(`${env.apiBaseUrl}/api/v1/admin/page-appearance`, () => {
           return HttpResponse.json({ data: defaultAppearanceDto });
@@ -254,40 +337,75 @@ describe("Page Appearance Feature V1", () => {
 
       renderAdminRouter();
 
-      expect(
-        await screen.findByTestId("appearance-no-image"),
-      ).toHaveTextContent("No background image configured");
+      expect(await screen.findByTestId("appearance-mode-none")).toHaveAttribute(
+        "aria-checked",
+        "true",
+      );
+      expect(screen.getByTestId("appearance-mode-color")).toHaveAttribute(
+        "aria-checked",
+        "false",
+      );
+      expect(screen.getByTestId("appearance-mode-image")).toHaveAttribute(
+        "aria-checked",
+        "false",
+      );
 
-      expect(
-        screen.queryByTestId("appearance-current-image"),
-      ).not.toBeInTheDocument();
-      expect(
-        screen.getByRole("button", { name: "Upload Background Image" }),
-      ).toBeInTheDocument();
-      expect(
-        screen.queryByRole("button", { name: "Remove Background" }),
-      ).not.toBeInTheDocument();
+      const colorInput = screen.getByTestId(
+        "appearance-color-input",
+      ) as HTMLInputElement;
+      expect(colorInput.value).toBe("#FFFFFF");
 
+      expect(screen.getByTestId("appearance-no-image")).toHaveTextContent(
+        "No background image configured",
+      );
+
+      // In Default (none) mode, image-specific controls are disabled
       const slider = screen.getByTestId(
         "appearance-opacity-slider",
       ) as HTMLInputElement;
-      expect(slider.value).toBe("35");
-      expect(screen.getByTestId("appearance-opacity-badge")).toHaveTextContent(
-        "35%",
-      );
+      expect(slider).toBeDisabled();
 
-      const centerRadio = screen.getByTestId("appearance-position-center");
-      expect(centerRadio).toHaveAttribute("aria-checked", "true");
+      expect(screen.getByTestId("appearance-position-center")).toBeDisabled();
+      expect(screen.getByTestId("appearance-size-cover")).toBeDisabled();
 
-      const coverRadio = screen.getByTestId("appearance-size-cover");
-      expect(coverRadio).toHaveAttribute("aria-checked", "true");
-
-      // Save button disabled when pristine
       const saveButton = screen.getByTestId("appearance-save-button");
       expect(saveButton).toBeDisabled();
     });
 
-    it("loads configured background image with custom position and size", async () => {
+    it("Section 47: loads color admin settings (color mode, #F4EFE8)", async () => {
+      server.use(
+        http.get(`${env.apiBaseUrl}/api/v1/admin/page-appearance`, () => {
+          return HttpResponse.json({ data: colorAppearanceDto });
+        }),
+      );
+
+      renderAdminRouter();
+
+      expect(
+        await screen.findByTestId("appearance-mode-color"),
+      ).toHaveAttribute("aria-checked", "true");
+
+      const colorPicker = screen.getByTestId(
+        "appearance-color-picker",
+      ) as HTMLInputElement;
+      expect(colorPicker.value.toUpperCase()).toBe("#F4EFE8");
+
+      const colorInput = screen.getByTestId(
+        "appearance-color-input",
+      ) as HTMLInputElement;
+      expect(colorInput.value).toBe("#F4EFE8");
+
+      // Overlay and position controls are disabled in color mode
+      expect(screen.getByTestId("appearance-opacity-slider")).toBeDisabled();
+      expect(screen.getByTestId("appearance-position-center")).toBeDisabled();
+      expect(screen.getByTestId("appearance-size-cover")).toBeDisabled();
+
+      // Live preview shows the background color
+      const livePreview = screen.getByTestId("appearance-live-preview");
+      expect(livePreview.style.backgroundColor).toBe("rgb(244, 239, 232)");
+    });
+
+    it("Section 48: loads image admin settings (image mode, #F4EFE8, media present)", async () => {
       server.use(
         http.get(`${env.apiBaseUrl}/api/v1/admin/page-appearance`, () => {
           return HttpResponse.json({ data: existingAppearanceDto });
@@ -295,6 +413,10 @@ describe("Page Appearance Feature V1", () => {
       );
 
       renderAdminRouter();
+
+      expect(
+        await screen.findByTestId("appearance-mode-image"),
+      ).toHaveAttribute("aria-checked", "true");
 
       const thumbnail = (await screen.findByTestId(
         "appearance-current-image",
@@ -308,21 +430,22 @@ describe("Page Appearance Feature V1", () => {
         screen.getByRole("button", { name: "Remove Background" }),
       ).toBeInTheDocument();
 
+      // Controls are enabled in image mode
       const slider = screen.getByTestId(
         "appearance-opacity-slider",
       ) as HTMLInputElement;
+      expect(slider).not.toBeDisabled();
       expect(slider.value).toBe("50");
-      expect(screen.getByTestId("appearance-opacity-badge")).toHaveTextContent(
-        "50%",
-      );
 
       const topRadio = screen.getByTestId("appearance-position-top");
+      expect(topRadio).not.toBeDisabled();
       expect(topRadio).toHaveAttribute("aria-checked", "true");
 
       const containRadio = screen.getByTestId("appearance-size-contain");
+      expect(containRadio).not.toBeDisabled();
       expect(containRadio).toHaveAttribute("aria-checked", "true");
 
-      // Live preview element matches loaded styles
+      // Live preview matches loaded styles
       const livePreview = screen.getByTestId("appearance-live-preview");
       expect(livePreview.style.backgroundImage).toContain(
         "https://api.enstisax.com/uploads/bg-sample.jpg",
@@ -335,9 +458,312 @@ describe("Page Appearance Feature V1", () => {
     });
   });
 
+  describe("Color Picker & Hex Text Input Sync & Validation", () => {
+    it("Section 49: updates text input when color picker changes", async () => {
+      server.use(
+        http.get(`${env.apiBaseUrl}/api/v1/admin/page-appearance`, () => {
+          return HttpResponse.json({ data: colorAppearanceDto });
+        }),
+      );
+
+      renderAdminRouter();
+
+      await screen.findByTestId("appearance-mode-color");
+
+      const colorPicker = screen.getByTestId("appearance-color-picker");
+      fireEvent.change(colorPicker, { target: { value: "#eae6df" } });
+
+      const colorInput = screen.getByTestId(
+        "appearance-color-input",
+      ) as HTMLInputElement;
+      expect(colorInput.value).toBe("#EAE6DF");
+    });
+
+    it("Section 50: updates color picker when valid hex is typed into text input", async () => {
+      server.use(
+        http.get(`${env.apiBaseUrl}/api/v1/admin/page-appearance`, () => {
+          return HttpResponse.json({ data: colorAppearanceDto });
+        }),
+      );
+
+      renderAdminRouter();
+
+      await screen.findByTestId("appearance-mode-color");
+
+      const colorInput = screen.getByTestId("appearance-color-input");
+      fireEvent.change(colorInput, { target: { value: "#00FF00" } });
+
+      const colorPicker = screen.getByTestId(
+        "appearance-color-picker",
+      ) as HTMLInputElement;
+      expect(colorPicker.value.toUpperCase()).toBe("#00FF00");
+    });
+
+    it("Section 51: normalizes lowercase hex to uppercase before sending API payload", async () => {
+      let patchPayload: unknown = null;
+
+      server.use(
+        http.get(`${env.apiBaseUrl}/api/v1/admin/page-appearance`, () => {
+          return HttpResponse.json({ data: defaultAppearanceDto });
+        }),
+        http.patch(
+          `${env.apiBaseUrl}/api/v1/admin/page-appearance`,
+          async ({ request }) => {
+            patchPayload = await request.json();
+            return HttpResponse.json({
+              data: {
+                ...defaultAppearanceDto,
+                background_color: "#F4EFE8",
+              },
+            });
+          },
+        ),
+      );
+
+      renderAdminRouter();
+
+      await screen.findByTestId("appearance-mode-none");
+
+      const colorInput = screen.getByTestId("appearance-color-input");
+      fireEvent.change(colorInput, { target: { value: "#f4efe8" } });
+
+      const saveBtn = screen.getByTestId("appearance-save-button");
+      expect(saveBtn).toBeEnabled();
+      fireEvent.click(saveBtn);
+
+      await waitFor(() => {
+        expect(patchPayload).toEqual({
+          background_color: "#F4EFE8",
+        });
+      });
+    });
+
+    it("Section 52: invalid color blocks API and shows validation error", async () => {
+      let patchCalled = false;
+
+      server.use(
+        http.get(`${env.apiBaseUrl}/api/v1/admin/page-appearance`, () => {
+          return HttpResponse.json({ data: defaultAppearanceDto });
+        }),
+        http.patch(`${env.apiBaseUrl}/api/v1/admin/page-appearance`, () => {
+          patchCalled = true;
+          return HttpResponse.json({ data: defaultAppearanceDto });
+        }),
+      );
+
+      renderAdminRouter();
+
+      await screen.findByTestId("appearance-mode-none");
+
+      const colorInput = screen.getByTestId("appearance-color-input");
+      fireEvent.change(colorInput, { target: { value: "red" } });
+
+      expect(screen.getByTestId("appearance-color-error")).toHaveTextContent(
+        /Color must be a valid 6-character hex code/i,
+      );
+
+      const saveBtn = screen.getByTestId("appearance-save-button");
+      fireEvent.click(saveBtn);
+
+      expect(patchCalled).toBe(false);
+    });
+  });
+
+  describe("Mode Switching & Preservation Semantics", () => {
+    it("Section 53: switching none -> color sends background_mode: 'color'", async () => {
+      let patchPayload: unknown = null;
+
+      server.use(
+        http.get(`${env.apiBaseUrl}/api/v1/admin/page-appearance`, () => {
+          return HttpResponse.json({ data: defaultAppearanceDto });
+        }),
+        http.patch(
+          `${env.apiBaseUrl}/api/v1/admin/page-appearance`,
+          async ({ request }) => {
+            patchPayload = await request.json();
+            return HttpResponse.json({
+              data: {
+                ...defaultAppearanceDto,
+                background_mode: "color",
+              },
+            });
+          },
+        ),
+      );
+
+      renderAdminRouter();
+
+      await screen.findByTestId("appearance-mode-none");
+
+      fireEvent.click(screen.getByTestId("appearance-mode-color"));
+
+      const saveBtn = screen.getByTestId("appearance-save-button");
+      expect(saveBtn).toBeEnabled();
+      fireEvent.click(saveBtn);
+
+      await waitFor(() => {
+        expect(patchPayload).toEqual({
+          background_mode: "color",
+        });
+      });
+    });
+
+    it("Section 54: switching color -> none preserves stored color and sends background_mode: 'none'", async () => {
+      let patchPayload: unknown = null;
+
+      server.use(
+        http.get(`${env.apiBaseUrl}/api/v1/admin/page-appearance`, () => {
+          return HttpResponse.json({ data: colorAppearanceDto });
+        }),
+        http.patch(
+          `${env.apiBaseUrl}/api/v1/admin/page-appearance`,
+          async ({ request }) => {
+            patchPayload = await request.json();
+            return HttpResponse.json({
+              data: {
+                ...colorAppearanceDto,
+                background_mode: "none",
+              },
+            });
+          },
+        ),
+      );
+
+      renderAdminRouter();
+
+      await screen.findByTestId("appearance-mode-color");
+
+      fireEvent.click(screen.getByTestId("appearance-mode-none"));
+
+      const saveBtn = screen.getByTestId("appearance-save-button");
+      expect(saveBtn).toBeEnabled();
+      fireEvent.click(saveBtn);
+
+      await waitFor(() => {
+        expect(patchPayload).toEqual({
+          background_mode: "none",
+        });
+      });
+    });
+
+    it("Section 55: switching image -> color does not delete stored image", async () => {
+      let patchPayload: unknown = null;
+
+      server.use(
+        http.get(`${env.apiBaseUrl}/api/v1/admin/page-appearance`, () => {
+          return HttpResponse.json({ data: existingAppearanceDto });
+        }),
+        http.patch(
+          `${env.apiBaseUrl}/api/v1/admin/page-appearance`,
+          async ({ request }) => {
+            patchPayload = await request.json();
+            return HttpResponse.json({
+              data: {
+                ...existingAppearanceDto,
+                background_mode: "color",
+              },
+            });
+          },
+        ),
+      );
+
+      renderAdminRouter();
+
+      await screen.findByTestId("appearance-mode-image");
+
+      fireEvent.click(screen.getByTestId("appearance-mode-color"));
+
+      const saveBtn = screen.getByTestId("appearance-save-button");
+      expect(saveBtn).toBeEnabled();
+      fireEvent.click(saveBtn);
+
+      await waitFor(() => {
+        expect(patchPayload).toEqual({
+          background_mode: "color",
+        });
+      });
+
+      // Stored image is still present in the UI
+      expect(
+        screen.getByTestId("appearance-current-image"),
+      ).toBeInTheDocument();
+    });
+
+    it("Section 56: switching color -> image with existing stored image sends background_mode: 'image'", async () => {
+      let patchPayload: unknown = null;
+
+      const colorWithStoredImage: AdminPageAppearanceDto = {
+        ...existingAppearanceDto,
+        background_mode: "color",
+      };
+
+      server.use(
+        http.get(`${env.apiBaseUrl}/api/v1/admin/page-appearance`, () => {
+          return HttpResponse.json({ data: colorWithStoredImage });
+        }),
+        http.patch(
+          `${env.apiBaseUrl}/api/v1/admin/page-appearance`,
+          async ({ request }) => {
+            patchPayload = await request.json();
+            return HttpResponse.json({
+              data: {
+                ...colorWithStoredImage,
+                background_mode: "image",
+              },
+            });
+          },
+        ),
+      );
+
+      renderAdminRouter();
+
+      await screen.findByTestId("appearance-mode-color");
+
+      fireEvent.click(screen.getByTestId("appearance-mode-image"));
+
+      const saveBtn = screen.getByTestId("appearance-save-button");
+      expect(saveBtn).toBeEnabled();
+      fireEvent.click(saveBtn);
+
+      await waitFor(() => {
+        expect(patchPayload).toEqual({
+          background_mode: "image",
+        });
+      });
+    });
+
+    it("Section 57: selecting Image mode without media blocks save and shows validation error", async () => {
+      let patchCalled = false;
+
+      server.use(
+        http.get(`${env.apiBaseUrl}/api/v1/admin/page-appearance`, () => {
+          return HttpResponse.json({ data: defaultAppearanceDto });
+        }),
+        http.patch(`${env.apiBaseUrl}/api/v1/admin/page-appearance`, () => {
+          patchCalled = true;
+          return HttpResponse.json({ data: defaultAppearanceDto });
+        }),
+      );
+
+      renderAdminRouter();
+
+      await screen.findByTestId("appearance-mode-none");
+
+      fireEvent.click(screen.getByTestId("appearance-mode-image"));
+
+      expect(screen.getByTestId("appearance-mode-error")).toHaveTextContent(
+        /Upload an image before switching to Image mode/i,
+      );
+
+      const saveBtn = screen.getByTestId("appearance-save-button");
+      fireEvent.click(saveBtn);
+
+      expect(patchCalled).toBe(false);
+    });
+  });
+
   describe("Admin Image Upload & Removal Flows", () => {
-    it("uploads image via media upload API and immediately PATCHes background_media_id", async () => {
-      let uploadCalled = false;
+    it("Section 58: upload image while in color mode assigns media without changing mode", async () => {
       let patchPayload: unknown = null;
 
       const uploadedMedia: AdminImageMedia = {
@@ -350,27 +776,30 @@ describe("Page Appearance Feature V1", () => {
         created_at: "2026-01-01T00:00:00Z",
       };
 
+      let currentData = { ...colorAppearanceDto };
+
       server.use(
         http.get(`${env.apiBaseUrl}/api/v1/admin/page-appearance`, () => {
-          return HttpResponse.json({ data: defaultAppearanceDto });
+          return HttpResponse.json({ data: currentData });
         }),
         http.post(`${env.apiBaseUrl}/api/v1/admin/media/upload`, () => {
-          uploadCalled = true;
           return HttpResponse.json({ data: uploadedMedia }, { status: 201 });
         }),
         http.patch(
           `${env.apiBaseUrl}/api/v1/admin/page-appearance`,
           async ({ request }) => {
             patchPayload = await request.json();
-            return HttpResponse.json({
-              data: {
-                ...defaultAppearanceDto,
-                background_media: {
-                  id: uploadedMedia.id,
-                  type: "image",
-                  url: uploadedMedia.url,
-                },
+            currentData = {
+              ...currentData,
+              background_media: {
+                id: uploadedMedia.id,
+                type: "image",
+                url: uploadedMedia.url,
+                alt_text: null,
               },
+            };
+            return HttpResponse.json({
+              data: currentData,
             });
           },
         ),
@@ -378,7 +807,7 @@ describe("Page Appearance Feature V1", () => {
 
       renderAdminRouter();
 
-      await screen.findByTestId("appearance-no-image");
+      await screen.findByTestId("appearance-mode-color");
 
       const fileInput = screen.getByTestId("appearance-file-input");
       const file = new File(["dummy content"], "photo.webp", {
@@ -388,168 +817,95 @@ describe("Page Appearance Feature V1", () => {
       fireEvent.change(fileInput, { target: { files: [file] } });
 
       await waitFor(() => {
-        expect(uploadCalled).toBe(true);
-      });
-
-      await waitFor(() => {
         expect(patchPayload).toEqual({
           background_media_id: uploadedMedia.id,
         });
       });
 
-      await waitFor(() => {
-        expect(
-          screen.getByText(/Appearance settings saved successfully/i),
-        ).toBeInTheDocument();
-      });
-    });
-
-    it("rejects non-image files before calling media upload API", async () => {
-      let uploadCalled = false;
-
-      server.use(
-        http.get(`${env.apiBaseUrl}/api/v1/admin/page-appearance`, () => {
-          return HttpResponse.json({ data: defaultAppearanceDto });
-        }),
-        http.post(`${env.apiBaseUrl}/api/v1/admin/media/upload`, () => {
-          uploadCalled = true;
-          return HttpResponse.json({}, { status: 201 });
-        }),
+      // Mode remains color
+      expect(screen.getByTestId("appearance-mode-color")).toHaveAttribute(
+        "aria-checked",
+        "true",
       );
 
-      renderAdminRouter();
-
-      await screen.findByTestId("appearance-no-image");
-
-      const fileInput = screen.getByTestId("appearance-file-input");
-      const pdfFile = new File(["pdf content"], "document.pdf", {
-        type: "application/pdf",
-      });
-
-      fireEvent.change(fileInput, { target: { files: [pdfFile] } });
-
+      // Helpful notice shown to user
       expect(
-        await screen.findByText(
-          /Invalid file type. Please select a JPEG, PNG, or WebP image/i,
-        ),
+        screen.getByText(/Select “Image” to use it as the active background/i),
       ).toBeInTheDocument();
-      expect(uploadCalled).toBe(false);
     });
 
-    it("handles media upload failure without calling appearance PATCH", async () => {
-      let patchCalled = false;
-
-      server.use(
-        http.get(`${env.apiBaseUrl}/api/v1/admin/page-appearance`, () => {
-          return HttpResponse.json({ data: defaultAppearanceDto });
-        }),
-        http.post(`${env.apiBaseUrl}/api/v1/admin/media/upload`, () => {
-          return HttpResponse.json(
-            {
-              error: {
-                code: "INTERNAL_ERROR",
-                message: "Storage quota exceeded",
-              },
-            },
-            { status: 500 },
-          );
-        }),
-        http.patch(`${env.apiBaseUrl}/api/v1/admin/page-appearance`, () => {
-          patchCalled = true;
-          return HttpResponse.json({ data: defaultAppearanceDto });
-        }),
-      );
-
-      renderAdminRouter();
-
-      await screen.findByTestId("appearance-no-image");
-
-      const fileInput = screen.getByTestId("appearance-file-input");
-      const file = new File(["dummy content"], "photo.png", {
-        type: "image/png",
-      });
-
-      fireEvent.change(fileInput, { target: { files: [file] } });
-
-      await waitFor(() => {
-        expect(screen.getByText(/Storage quota exceeded/i)).toBeInTheDocument();
-      });
-
-      expect(patchCalled).toBe(false);
-      expect(screen.getByTestId("appearance-no-image")).toBeInTheDocument();
-    });
-
-    it("handles PATCH failure after successful image upload", async () => {
-      const uploadedMedia: AdminImageMedia = {
-        type: "image",
-        id: "12345678-1234-4234-8234-123456789abc",
-        url: "https://api.enstisax.com/uploads/new-bg.webp",
-        original_filename: "photo.jpg",
-        mime_type: "image/jpeg",
-        file_size: 2048,
-        created_at: "2026-01-01T00:00:00Z",
-      };
-
-      server.use(
-        http.get(`${env.apiBaseUrl}/api/v1/admin/page-appearance`, () => {
-          return HttpResponse.json({ data: defaultAppearanceDto });
-        }),
-        http.post(`${env.apiBaseUrl}/api/v1/admin/media/upload`, () => {
-          return HttpResponse.json({ data: uploadedMedia }, { status: 201 });
-        }),
-        http.patch(`${env.apiBaseUrl}/api/v1/admin/page-appearance`, () => {
-          return HttpResponse.json(
-            {
-              error: {
-                code: "INTERNAL_ERROR",
-                message: "Database connection failed",
-              },
-            },
-            { status: 500 },
-          );
-        }),
-      );
-
-      renderAdminRouter();
-
-      await screen.findByTestId("appearance-no-image");
-
-      const fileInput = screen.getByTestId("appearance-file-input");
-      const file = new File(["dummy content"], "photo.jpg", {
-        type: "image/jpeg",
-      });
-
-      fireEvent.change(fileInput, { target: { files: [file] } });
-
-      await waitFor(() => {
-        expect(
-          screen.getByText(/Database connection failed/i),
-        ).toBeInTheDocument();
-      });
-
-      expect(
-        screen.queryByText(/Appearance settings saved successfully/i),
-      ).not.toBeInTheDocument();
-    });
-
-    it("removes background image sending background_media_id: null", async () => {
+    it("Section 59: remove image in image mode atomically switches mode to none and detaches media", async () => {
       let patchPayload: unknown = null;
-      let currentAppearance = { ...existingAppearanceDto };
+
+      let currentData = { ...existingAppearanceDto };
 
       server.use(
         http.get(`${env.apiBaseUrl}/api/v1/admin/page-appearance`, () => {
-          return HttpResponse.json({ data: currentAppearance });
+          return HttpResponse.json({ data: currentData });
         }),
         http.patch(
           `${env.apiBaseUrl}/api/v1/admin/page-appearance`,
           async ({ request }) => {
             patchPayload = await request.json();
-            currentAppearance = {
-              ...currentAppearance,
+            currentData = {
+              ...currentData,
+              background_mode: "none",
               background_media: null,
             };
             return HttpResponse.json({
-              data: currentAppearance,
+              data: currentData,
+            });
+          },
+        ),
+      );
+
+      renderAdminRouter();
+
+      await screen.findByTestId("appearance-current-image");
+
+      const removeBtn = screen.getByRole("button", {
+        name: "Remove Background",
+      });
+      fireEvent.click(removeBtn);
+
+      await waitFor(() => {
+        expect(patchPayload).toEqual({
+          background_mode: "none",
+          background_media_id: null,
+        });
+      });
+
+      await waitFor(() => {
+        expect(screen.getByTestId("appearance-no-image")).toBeInTheDocument();
+        expect(screen.getByTestId("appearance-mode-none")).toHaveAttribute(
+          "aria-checked",
+          "true",
+        );
+      });
+    });
+
+    it("Section 60: remove image in color mode preserves mode and only detaches media", async () => {
+      let patchPayload: unknown = null;
+
+      let currentData: AdminPageAppearanceDto = {
+        ...existingAppearanceDto,
+        background_mode: "color",
+      };
+
+      server.use(
+        http.get(`${env.apiBaseUrl}/api/v1/admin/page-appearance`, () => {
+          return HttpResponse.json({ data: currentData });
+        }),
+        http.patch(
+          `${env.apiBaseUrl}/api/v1/admin/page-appearance`,
+          async ({ request }) => {
+            patchPayload = await request.json();
+            currentData = {
+              ...currentData,
+              background_media: null,
+            };
+            return HttpResponse.json({
+              data: currentData,
             });
           },
         ),
@@ -571,152 +927,36 @@ describe("Page Appearance Feature V1", () => {
       });
 
       await waitFor(() => {
+        expect(screen.getByTestId("appearance-mode-color")).toHaveAttribute(
+          "aria-checked",
+          "true",
+        );
         expect(screen.getByTestId("appearance-no-image")).toBeInTheDocument();
       });
     });
   });
 
-  describe("Overlay, Position, Size Controls & Partial PATCH", () => {
-    it("updates overlay slider and sends partial PATCH { overlay_opacity: 0.6 }", async () => {
-      let patchPayload: unknown = null;
-
+  describe("Overlay, Position, Size Controls & Live Preview Behavior", () => {
+    it("Section 65: live preview immediately updates background on mode switch before save", async () => {
       server.use(
         http.get(`${env.apiBaseUrl}/api/v1/admin/page-appearance`, () => {
           return HttpResponse.json({ data: defaultAppearanceDto });
         }),
-        http.patch(
-          `${env.apiBaseUrl}/api/v1/admin/page-appearance`,
-          async ({ request }) => {
-            patchPayload = await request.json();
-            return HttpResponse.json({
-              data: {
-                ...defaultAppearanceDto,
-                overlay_opacity: 0.6,
-              },
-            });
-          },
-        ),
       );
 
       renderAdminRouter();
 
-      await screen.findByTestId("appearance-no-image");
+      await screen.findByTestId("appearance-mode-none");
 
-      const slider = screen.getByTestId("appearance-opacity-slider");
-      fireEvent.change(slider, { target: { value: "60" } });
-
-      expect(screen.getByTestId("appearance-opacity-badge")).toHaveTextContent(
-        "60%",
-      );
-
-      // Live preview overlay immediately updates before saving
-      const previewOverlay = screen.getByTestId("appearance-preview-overlay");
-      expect(previewOverlay.style.opacity).toBe("0.6");
-
-      const saveBtn = screen.getByTestId("appearance-save-button");
-      expect(saveBtn).toBeEnabled();
-      fireEvent.click(saveBtn);
-
-      await waitFor(() => {
-        expect(patchPayload).toEqual({
-          overlay_opacity: 0.6,
-        });
-      });
-
-      await waitFor(() => {
-        expect(
-          screen.getByText(/Appearance settings saved successfully/i),
-        ).toBeInTheDocument();
-      });
-    });
-
-    it("changes position to top and sends partial PATCH { background_position: 'top' }", async () => {
-      let patchPayload: unknown = null;
-
-      server.use(
-        http.get(`${env.apiBaseUrl}/api/v1/admin/page-appearance`, () => {
-          return HttpResponse.json({ data: defaultAppearanceDto });
-        }),
-        http.patch(
-          `${env.apiBaseUrl}/api/v1/admin/page-appearance`,
-          async ({ request }) => {
-            patchPayload = await request.json();
-            return HttpResponse.json({
-              data: {
-                ...defaultAppearanceDto,
-                background_position: "top",
-              },
-            });
-          },
-        ),
-      );
-
-      renderAdminRouter();
-
-      await screen.findByTestId("appearance-no-image");
-
-      const topRadio = screen.getByTestId("appearance-position-top");
-      fireEvent.click(topRadio);
-
-      // Live preview immediately reflects top
       const livePreview = screen.getByTestId("appearance-live-preview");
-      expect(livePreview.style.backgroundPosition).toBe("top");
+      expect(livePreview.style.backgroundImage).toBe("none");
 
-      const saveBtn = screen.getByTestId("appearance-save-button");
-      expect(saveBtn).toBeEnabled();
-      fireEvent.click(saveBtn);
-
-      await waitFor(() => {
-        expect(patchPayload).toEqual({
-          background_position: "top",
-        });
-      });
+      // Switch to Color
+      fireEvent.click(screen.getByTestId("appearance-mode-color"));
+      expect(livePreview.style.backgroundColor).toBe("rgb(255, 255, 255)");
     });
 
-    it("changes size to contain and sends partial PATCH { background_size: 'contain' }", async () => {
-      let patchPayload: unknown = null;
-
-      server.use(
-        http.get(`${env.apiBaseUrl}/api/v1/admin/page-appearance`, () => {
-          return HttpResponse.json({ data: defaultAppearanceDto });
-        }),
-        http.patch(
-          `${env.apiBaseUrl}/api/v1/admin/page-appearance`,
-          async ({ request }) => {
-            patchPayload = await request.json();
-            return HttpResponse.json({
-              data: {
-                ...defaultAppearanceDto,
-                background_size: "contain",
-              },
-            });
-          },
-        ),
-      );
-
-      renderAdminRouter();
-
-      await screen.findByTestId("appearance-no-image");
-
-      const containRadio = screen.getByTestId("appearance-size-contain");
-      fireEvent.click(containRadio);
-
-      // Live preview immediately reflects contain
-      const livePreview = screen.getByTestId("appearance-live-preview");
-      expect(livePreview.style.backgroundSize).toBe("contain");
-
-      const saveBtn = screen.getByTestId("appearance-save-button");
-      expect(saveBtn).toBeEnabled();
-      fireEvent.click(saveBtn);
-
-      await waitFor(() => {
-        expect(patchPayload).toEqual({
-          background_size: "contain",
-        });
-      });
-    });
-
-    it("tests live preview reacts immediately to position buttons (top, bottom, center)", async () => {
+    it("Section 66 & 67: overlay, position, and size controls are enabled in image mode and disabled in color/none modes", async () => {
       server.use(
         http.get(`${env.apiBaseUrl}/api/v1/admin/page-appearance`, () => {
           return HttpResponse.json({ data: existingAppearanceDto });
@@ -725,20 +965,28 @@ describe("Page Appearance Feature V1", () => {
 
       renderAdminRouter();
 
-      await screen.findByTestId("appearance-current-image");
+      await screen.findByTestId("appearance-mode-image");
 
-      const livePreview = screen.getByTestId("appearance-live-preview");
+      const slider = screen.getByTestId(
+        "appearance-opacity-slider",
+      ) as HTMLInputElement;
+      expect(slider).not.toBeDisabled();
+      expect(
+        screen.getByTestId("appearance-position-center"),
+      ).not.toBeDisabled();
+      expect(screen.getByTestId("appearance-size-cover")).not.toBeDisabled();
 
-      // Initially top from existingAppearanceDto
-      expect(livePreview.style.backgroundPosition).toBe("top");
+      // Switch to Color: controls become disabled, values preserved
+      fireEvent.click(screen.getByTestId("appearance-mode-color"));
+      expect(slider).toBeDisabled();
+      expect(slider.value).toBe("50");
+      expect(screen.getByTestId("appearance-position-center")).toBeDisabled();
+      expect(screen.getByTestId("appearance-size-cover")).toBeDisabled();
 
-      // Click Bottom
-      fireEvent.click(screen.getByTestId("appearance-position-bottom"));
-      expect(livePreview.style.backgroundPosition).toBe("bottom");
-
-      // Click Center
-      fireEvent.click(screen.getByTestId("appearance-position-center"));
-      expect(livePreview.style.backgroundPosition).toBe("center");
+      // Switch to None: controls stay disabled
+      fireEvent.click(screen.getByTestId("appearance-mode-none"));
+      expect(slider).toBeDisabled();
+      expect(slider.value).toBe("50");
     });
   });
 
@@ -751,6 +999,8 @@ describe("Page Appearance Feature V1", () => {
         seo_title: "Saxophone Ensemble",
       },
       appearance: {
+        background_mode: "none",
+        background_color: "#FFFFFF",
         background_media: null,
         overlay_opacity: 0.35,
         background_position: "center",
@@ -769,7 +1019,7 @@ describe("Page Appearance Feature V1", () => {
       testimonials: [],
     };
 
-    it("renders default layout without background styles or overlay when background_media is null", async () => {
+    it("Section 61: renders default layout without background styles or overlay when background_mode = 'none'", async () => {
       server.use(
         http.get(`${env.apiBaseUrl}/api/v1/public/page`, () => {
           return HttpResponse.json({ data: basePublicPage });
@@ -784,16 +1034,53 @@ describe("Page Appearance Feature V1", () => {
 
       const wrapper = screen.getByTestId("public-page-wrapper");
       expect(wrapper.style.backgroundImage).toBe("");
+      expect(wrapper.style.backgroundColor).toBe("");
 
       expect(
         screen.queryByTestId("public-page-overlay"),
       ).not.toBeInTheDocument();
     });
 
-    it("renders background image, position, size, and overlay when configured", async () => {
+    it("Section 62: renders solid background-color and no overlay when background_mode = 'color'", async () => {
+      const publicColorPage: PublicPageResponse = {
+        ...basePublicPage,
+        appearance: {
+          background_mode: "color",
+          background_color: "#F4EFE8",
+          background_media: null,
+          overlay_opacity: 0.35,
+          background_position: "center",
+          background_size: "cover",
+        },
+      };
+
+      server.use(
+        http.get(`${env.apiBaseUrl}/api/v1/public/page`, () => {
+          return HttpResponse.json({ data: publicColorPage });
+        }),
+      );
+
+      renderPublicView();
+
+      expect(
+        await screen.findByRole("heading", { name: "About Us" }),
+      ).toBeInTheDocument();
+
+      const wrapper = screen.getByTestId("public-page-wrapper");
+      expect(wrapper.style.backgroundColor).toBe("rgb(244, 239, 232)");
+      expect(wrapper.style.backgroundImage).toBe("");
+
+      expect(
+        screen.queryByTestId("public-page-overlay"),
+      ).not.toBeInTheDocument();
+    });
+
+    it("Section 63: renders background image, position, size, base color, and overlay when background_mode = 'image'", async () => {
       const publicWithBackground: PublicPageResponse = {
         ...basePublicPage,
         appearance: {
+          background_mode: "image",
+          background_color: "#F4EFE8",
           background_media: {
             id: "99999999-9999-4999-8999-999999999999",
             type: "image",
@@ -818,6 +1105,7 @@ describe("Page Appearance Feature V1", () => {
       ).toBeInTheDocument();
 
       const wrapper = screen.getByTestId("public-page-wrapper");
+      expect(wrapper.style.backgroundColor).toBe("rgb(244, 239, 232)");
       expect(wrapper.style.backgroundImage).toContain(
         "https://api.enstisax.com/uploads/bg-hero.webp",
       );
@@ -828,7 +1116,41 @@ describe("Page Appearance Feature V1", () => {
       expect(overlay.style.opacity).toBe("0.4");
     });
 
-    it("maintains identical appearance settings when switching between English and German", async () => {
+    it("Section 64: defensive rendering when background_mode = 'image' but background_media is null", async () => {
+      // Defensive test verifying no crashes if malformed state arrives
+      const malformedData: PublicPageResponse = {
+        ...basePublicPage,
+        appearance: {
+          background_mode: "image",
+          background_color: "#F4EFE8",
+          background_media: null,
+          overlay_opacity: 0.35,
+          background_position: "center",
+          background_size: "cover",
+        },
+      };
+
+      server.use(
+        http.get(`${env.apiBaseUrl}/api/v1/public/page`, () => {
+          return HttpResponse.json({ data: malformedData });
+        }),
+      );
+
+      renderPublicView();
+
+      expect(
+        await screen.findByRole("heading", { name: "About Us" }),
+      ).toBeInTheDocument();
+
+      const wrapper = screen.getByTestId("public-page-wrapper");
+      expect(wrapper.style.backgroundColor).toBe("rgb(244, 239, 232)");
+      expect(wrapper.style.backgroundImage).toBe("");
+      expect(
+        screen.queryByTestId("public-page-overlay"),
+      ).not.toBeInTheDocument();
+    });
+
+    it("Section 68: maintains identical appearance settings when switching between English and German", async () => {
       const enData: PublicPageResponse = {
         ...basePublicPage,
         page: {
@@ -836,6 +1158,8 @@ describe("Page Appearance Feature V1", () => {
           title: "Saxophone Ensemble",
         },
         appearance: {
+          background_mode: "image",
+          background_color: "#F4EFE8",
           background_media: {
             id: "99999999-9999-4999-8999-999999999999",
             type: "image",

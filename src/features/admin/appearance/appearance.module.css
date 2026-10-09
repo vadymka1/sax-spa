@@ -351,3 +351,61 @@
   gap: 1rem;
   padding-top: 1rem;
 }
+
+/* Color Controls & Field Error */
+.colorControlsRow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.colorPickerInput {
+  width: 44px;
+  height: 40px;
+  padding: 2px;
+  border: 1px solid var(--color-admin-border-strong);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  cursor: pointer;
+}
+
+.colorPickerInput:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.colorTextInput {
+  font-family: ui-monospace, SFMono-Regular, monospace;
+  font-size: 0.95rem;
+  font-weight: 600;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid var(--color-admin-border-strong);
+  border-radius: var(--radius-sm);
+  background-color: var(--color-admin-surface);
+  color: var(--color-admin-text);
+  width: 130px;
+  text-transform: uppercase;
+}
+
+.colorTextInput:focus {
+  outline: none;
+  border-color: var(--color-admin-primary);
+}
+
+.colorTextInput:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.fieldError {
+  color: var(--color-admin-danger);
+  font-size: 0.82rem;
+  font-weight: 500;
+  margin-top: 0.25rem;
+}
+
+.segmentedOption:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}

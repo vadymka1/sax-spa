@@ -246,25 +246,31 @@ react-spa-sax/
   - `title` and `text`: Localized independently per language (`translations.en`, `translations.de`).
   - `media`: Shared across languages and not duplicated.
 
-## Page Appearance (V1)
+## Page Appearance (V1.2)
 
-- **Feature Overview**: Enables administrative configuration of the visual page background and overlay on the public SPA.
+- **Feature Overview**: Enables administrative configuration of the visual page background mode, solid color, background image, and overlay on the public SPA.
+- **Background Modes**:
+  - `none` (Default): Uses the default editorial site design. Stored image and color configurations remain preserved but inactive.
+  - `color` (Color): Displays a solid `#RRGGBB` background color across the entire public page. Stored background image is preserved in state without being detached.
+  - `image` (Image): Displays a background image. Background color acts as the base/fallback while the image loads or if it cannot be displayed. Requires an uploaded image before switching.
 - **Supported Settings**:
+  - `background_mode`: Explicit mode enum (`none`, `color`, `image`).
+  - `background_color`: Canonical uppercase `#RRGGBB` hex color. Controlled via native color picker and synchronized hex text input with validation.
   - `background_media`: Image media asset (`image/jpeg`, `image/png`, `image/webp`). Managed through the shared Media API.
-  - `overlay_opacity`: Soft ivory overlay intensity ranging from `0.0` (0%) to `1.0` (100%).
-  - `background_position`: CSS positioning (`center`, `top`, `bottom`).
-  - `background_size`: Sizing mode (`cover` fills the screen, may crop; `contain` preserves aspect ratio without cropping).
+  - `overlay_opacity`: Soft ivory overlay intensity ranging from `0.0` (0%) to `1.0` (100%). Active in Image mode.
+  - `background_position`: CSS positioning (`center`, `top`, `bottom`). Active in Image mode.
+  - `background_size`: Sizing mode (`cover` fills the screen, may crop; `contain` preserves aspect ratio without cropping). Active in Image mode.
 - **Admin Management Route**: Dedicated protected route `/admin/page-appearance` accessible via the admin navigation sidebar.
-- **Workflow & Media Sharing**:
-  - Selecting an image uploads the asset via the existing `POST /api/v1/admin/media/upload` endpoint.
-  - Upon upload success, the appearance is updated via `PATCH /api/v1/admin/page-appearance` with `{ background_media_id: "<id>" }`.
-  - Removing the background sends `{ background_media_id: null }` without deleting the underlying media asset.
-  - Partial PATCH: Only modified fields are sent when updating overlay opacity, position, or size.
-  - Live Preview: Real-time visual preview in the admin interface reacting dynamically to unsaved slider and option adjustments before persisting changes.
+- **Workflow & Preservation Semantics**:
+  - Switching modes preserves stored color and stored image across mode switches without destructive resets.
+  - Selecting an image uploads the asset via `POST /api/v1/admin/media/upload` and assigns `background_media_id` without forcing mode switch away from `none` or `color`.
+  - Removing background in `image` mode atomically switches mode to `none` and clears `background_media_id`. In `color` or `none` modes, only `background_media_id` is cleared while preserving mode and color.
+  - Partial PATCH: Only modified fields are sent when updating mode, color, overlay opacity, position, or size.
+  - Live Preview: Real-time visual preview reacting dynamically to mode, color, slider, and option adjustments before saving.
 - **Public SPA Rendering Behavior**:
-  - When `background_media` is present: The public page root applies `background-image`, `background-position`, `background-size`, and renders a soft ivory overlay (`var(--color-public-bg)` with dynamic opacity).
-  - Layering & Readability: The overlay uses `pointer-events: none` and `z-index: 0`. Public content and interactive controls sit at `z-index: 1`, while the sticky header is at `z-index: 1000`. Content clickability and accessibility are fully preserved.
-  - When `background_media` is null: Falls back gracefully to the default editorial background without broken styles.
+  - When `background_mode` is `color`: Applies `background-color` to the page root without overlay.
+  - When `background_mode` is `image`: Applies `background-color` as base/fallback, `background-image`, `background-position`, `background-size`, and renders overlay (`var(--color-public-bg)` with dynamic opacity).
+  - When `background_mode` is `none`: Falls back gracefully to the default editorial background without broken styles or overlay.
   - Language-Independent: Appearance settings are shared across all locales (`en`, `de`). Switching languages does not reset or refetch appearance settings.
 - **Appearance Media Contract**:
   - The appearance media DTO strictly enforces the backend discriminator:

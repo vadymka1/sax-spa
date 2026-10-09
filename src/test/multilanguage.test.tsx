@@ -38,6 +38,8 @@ const mockEnglishPublicPage = {
       seo_keywords: ["sax"],
     },
     appearance: {
+      background_mode: "none" as const,
+      background_color: "#FFFFFF",
       background_media: null,
       overlay_opacity: 0.35,
       background_position: "center" as const,
@@ -85,6 +87,8 @@ const mockGermanPublicPage = {
       seo_keywords: ["sax"],
     },
     appearance: {
+      background_mode: "none" as const,
+      background_color: "#FFFFFF",
       background_media: null,
       overlay_opacity: 0.35,
       background_position: "center" as const,
