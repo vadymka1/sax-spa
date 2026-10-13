@@ -180,12 +180,12 @@
 
 @media (max-width: 640px) {
   .reviewContainer {
-    padding: 1.75rem 1.25rem;
+    padding: clamp(1.25rem, 3.5vw, 1.75rem) clamp(0.875rem, 3.5vw, 1.25rem);
     margin-top: 2rem;
   }
 
   .title {
-    font-size: 1.4rem;
+    font-size: clamp(1.25rem, 4vw, 1.4rem);
   }
 
   .submitButton {

@@ -114,6 +114,9 @@ html {
   scroll-behavior: smooth;
   color: var(--color-admin-text);
   background-color: var(--color-public-bg);
+  overflow-x: hidden;
+  width: 100%;
+  max-width: 100%;
 }
 
 body {
@@ -121,6 +124,23 @@ body {
   padding: 0;
   color: var(--color-public-text);
   background-color: var(--color-public-bg);
+  overflow-x: hidden;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+span,
+a,
+label {
+  overflow-wrap: anywhere;
 }
 
 button,
@@ -129,7 +149,7 @@ optgroup,
 select,
 textarea {
   font-family: inherit;
-  font-size: 100%;
+  font-size: 1rem;
   line-height: inherit;
   margin: 0;
 }
@@ -143,6 +163,10 @@ video {
   max-width: 100%;
   height: auto;
   display: block;
+}
+
+iframe {
+  max-width: 100%;
 }
 
 /* W3C Focus Visible Standard */

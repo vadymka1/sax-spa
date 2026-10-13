@@ -378,7 +378,7 @@
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  padding: 1rem;
+  padding: clamp(0.5rem, 2vw, 1rem);
 }
 
 .modal {
@@ -386,9 +386,9 @@
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
   width: 100%;
-  max-width: 550px;
-  max-height: calc(100vh - 2rem);
-  max-height: calc(100dvh - 2rem);
+  max-width: min(550px, calc(100vw - 1rem));
+  max-height: calc(100vh - 1.5rem);
+  max-height: calc(100dvh - 1.5rem);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -591,6 +591,12 @@
   gap: 1rem;
 }
 
+@media (max-width: 520px) {
+  .typographyGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .typographyPreview {
   margin-top: 0.5rem;
   padding: 0.85rem 1rem;
@@ -629,6 +635,8 @@
   border: 1px solid var(--color-admin-border);
   border-radius: var(--radius-sm);
   font-size: 0.85rem;
+  flex-wrap: wrap;
+  gap: 0.5rem;
 }
 
 .mediaQueueInfo {
@@ -756,6 +764,7 @@
   margin-bottom: 1.25rem;
   border-bottom: 1px solid var(--color-admin-border);
   padding-bottom: 0.5rem;
+  flex-wrap: wrap;
 }
 
 .langTab {

@@ -11,8 +11,10 @@
 .langButton {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  padding: 5px 10px;
+  justify-content: center;
+  gap: 4px;
+  padding: 5px 8px;
+  min-height: 32px;
   background: transparent;
   border: none;
   border-radius: 9999px;
@@ -22,6 +24,7 @@
   cursor: pointer;
   transition: all 0.15s ease-in-out;
   line-height: 1;
+  touch-action: manipulation;
 }
 
 .langButton:hover:not(.activeLang) {

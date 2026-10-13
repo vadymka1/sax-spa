@@ -301,3 +301,15 @@ volumes:
 ```
 
 > **Warning**: Never run destructive volume removal commands such as `docker compose down -v` in production, as this would erase uploaded media assets.
+
+## Responsive Design (V1.2)
+
+- **Supported Responsive Ranges**: Full mobile, tablet, and desktop viewports from small mobile (320px, 360px, 375px), modern phones (390px, 414px, 480px), tablets (768px, 1024px), up to wide desktops (1280px+). Designed with responsive CSS primitives (`overflow-x: hidden` boundary protection, fluid widths, and clamp sizing).
+- **Mobile Public Navigation**: Compact mobile header bar `[Brand] [🇬🇧 EN / 🇩🇪 DE] [☰ Menu]` with touch targets ≥ 44px. Single canonical language switcher in the top mobile header (no duplicate controls inside the drawer). Full-screen drawer overlay with accessible attributes (`aria-expanded`, `aria-controls`), body scroll lock when open, and closing on link navigation, backdrop click, or Escape key. Localized navigation labels update dynamically upon locale switch without technical slug translation.
+- **Admin Mobile Drawer**: Collapsible navigation drawer in Admin CMS triggered by header menu button. Consumes unified route definitions, provides body scroll locking, and closes automatically upon route navigation, close button, backdrop click, or Escape key, with unmount cleanup.
+- **Responsive Media Behavior**: All images, videos, and YouTube embeds adapt fluidly to container width (`max-width: 100%`, `height: auto`). YouTube embeds maintain responsive 16:9 aspect ratio (`aspect-ratio: 16 / 9`) with `youtube-nocookie`.
+- **Table Overflow Strategy**: Data-dense admin tables (Sections, Content, Testimonials, Contact Messages, Users) utilize an internal touch-scrolling container (`overflow-x: auto`, `-webkit-overflow-scrolling: touch`) with logical table `min-width: 600px`, preventing squeezed columns without causing root document overflow.
+- **Responsive Testing Strategy**:
+  - **Component / State Contract Tests**: Automated Vitest/React Testing Library tests verify drawer open/closed state transitions, CSS module class assignment (`styles.mobileDrawerOpen`), backdrop visibility, body scroll locking/restoration, and keyboard Escape behavior.
+  - **CSS Responsive Contract Tests**: Tests verify real component DOM structures (e.g. `UsersList`, `SpaSectionsList`) are wrapped inside responsive scrolling containers (`tableWrapper`).
+  - **Visual & Layout Testing**: JSDOM does not calculate real browser layout or box geometry; true visual rendering and lack of document-level horizontal overflow across representative viewport widths (320px, 375px, 768px, 1280px) are validated in real browser environments.

@@ -34,6 +34,8 @@
   margin-bottom: 1.5rem;
   padding-bottom: 0.25rem;
   flex-wrap: wrap;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .tabButton {
@@ -283,19 +285,21 @@
   bottom: 0;
   background-color: rgba(15, 23, 42, 0.55);
   backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  padding: 1rem;
+  padding: clamp(0.5rem, 2vw, 1rem);
 }
 
 .modal {
   background: var(--color-admin-surface);
   border-radius: var(--radius-lg);
   width: 100%;
-  max-width: 640px;
-  max-height: 90vh;
+  max-width: min(640px, calc(100vw - 1rem));
+  max-height: calc(100vh - 1.5rem);
+  max-height: calc(100dvh - 1.5rem);
   display: flex;
   flex-direction: column;
   box-shadow: var(--shadow-lg);

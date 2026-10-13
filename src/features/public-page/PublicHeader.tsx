@@ -28,6 +28,16 @@ export const PublicHeader: React.FC<PublicHeaderProps> = ({
     setIsMobileOpen((prev) => !prev);
   };
 
+  // Lock body scroll when mobile menu is open and restore when closed/unmounted
+  useEffect(() => {
+    if (!isMobileOpen) return;
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = originalOverflow;
+    };
+  }, [isMobileOpen]);
+
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape" && isMobileOpen) {
@@ -57,7 +67,7 @@ export const PublicHeader: React.FC<PublicHeaderProps> = ({
             />
           </div>
 
-          <LanguageSwitcher className={styles.desktopLangSwitcher} />
+          <LanguageSwitcher className={styles.headerLangSwitcher} />
 
           <button
             type="button"
@@ -74,6 +84,14 @@ export const PublicHeader: React.FC<PublicHeaderProps> = ({
         </div>
       </div>
 
+      {isMobileOpen && (
+        <div
+          className={styles.mobileBackdrop}
+          onClick={closeMobileMenu}
+          aria-hidden="true"
+        />
+      )}
+
       <div
         className={`${styles.mobileNavDrawer} ${isMobileOpen ? styles.mobileNavOpen : ""}`}
       >
@@ -83,9 +101,6 @@ export const PublicHeader: React.FC<PublicHeaderProps> = ({
           onLinkClick={closeMobileMenu}
           navId="public-mobile-navigation"
         />
-        <div className={styles.mobileDrawerFooter}>
-          <LanguageSwitcher onSelect={closeMobileMenu} />
-        </div>
       </div>
     </header>
   );

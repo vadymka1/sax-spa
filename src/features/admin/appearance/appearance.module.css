@@ -409,3 +409,54 @@
   opacity: 0.45;
   cursor: not-allowed;
 }
+
+@media (max-width: 640px) {
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .footerBar {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+
+  .footerBar button {
+    width: 100%;
+  }
+
+  .previewHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .imageControls {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .imageActions {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .segmentedGroup {
+    flex-direction: column;
+  }
+
+  .segmentedOption {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .colorControlsRow {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .colorTextInput {
+    width: 100%;
+  }
+}

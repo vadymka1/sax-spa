@@ -11,8 +11,9 @@
   background: var(--color-public-surface);
   border: 1px solid var(--color-public-border);
   box-shadow: var(--shadow-sm);
-  padding: 3rem 4rem;
+  padding: clamp(1.5rem, 4.5vw, 3rem) clamp(1rem, 4.5vw, 4rem);
   outline: none;
+  box-sizing: border-box;
   transition: box-shadow var(--transition-fast);
 }
 
@@ -27,7 +28,8 @@
   background: var(--color-public-surface);
   border: 1px solid var(--color-public-border);
   box-shadow: var(--shadow-sm);
-  padding: 3rem 4rem;
+  padding: clamp(1.5rem, 4.5vw, 3rem) clamp(1rem, 4.5vw, 4rem);
+  box-sizing: border-box;
 }
 
 .quoteMark {
@@ -42,13 +44,14 @@
 
 .quoteText {
   font-family: var(--font-display);
-  font-size: 1.35rem;
+  font-size: clamp(1.05rem, 3.5vw, 1.35rem);
   line-height: 1.7;
   color: var(--color-public-heading);
   font-style: italic;
   margin: 0 0 2rem 0;
   white-space: pre-wrap;
   word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
 .authorFooter {
@@ -57,6 +60,7 @@
   gap: 1.25rem;
   border-top: 1px solid var(--color-public-border);
   padding-top: 1.5rem;
+  flex-wrap: wrap;
 }
 
 .avatar {
