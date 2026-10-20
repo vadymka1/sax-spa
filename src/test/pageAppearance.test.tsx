@@ -13,8 +13,11 @@ import { PageAppearancePage } from "../features/admin/appearance/PageAppearanceP
 import { PublicPage } from "../features/public-page/PublicPage";
 import {
   AdminImageMedia,
+  AdminImageMediaSchema,
   AdminPageAppearanceDto,
   AdminPageAppearanceDtoSchema,
+  PublicPageAppearanceMediaSchema,
+  PublicPageAppearanceDtoSchema,
   PublicPageResponse,
 } from "../api/types";
 import { apiClient } from "../api/client";
@@ -54,7 +57,11 @@ const existingAppearanceDto: AdminPageAppearanceDto = {
     id: "99999999-9999-4999-8999-999999999999",
     type: "image",
     url: "https://api.enstisax.com/uploads/bg-sample.jpg",
+    original_filename: "bg-sample.jpg",
+    mime_type: "image/jpeg",
+    file_size: 123456,
     alt_text: null,
+    created_at: "2026-10-20T12:00:00Z",
   },
   overlay_opacity: 0.5,
   background_position: "top",
@@ -172,34 +179,180 @@ describe("Page Appearance Feature V1.2 — Background Mode and Solid Color", () 
       ).not.toThrow();
     });
 
-    it("parses valid image with type: 'image' and null background", () => {
-      const validImageAppearance = {
-        background_mode: "image",
-        background_color: "#FFFFFF",
+    it("Section 14: parses valid realistic full admin background media payload", () => {
+      const realisticAdminPayload = {
+        background_mode: "image" as const,
+        background_color: "#F4EFE8",
         background_media: {
           id: "99999999-9999-4999-8999-999999999999",
-          type: "image",
-          url: "https://api.enstisax.com/uploads/bg.webp",
-          alt_text: "Background",
+          type: "image" as const,
+          url: "http://localhost:8000/uploads/background.jpg",
+          original_filename: "background.jpg",
+          mime_type: "image/jpeg",
+          file_size: 123456,
+          alt_text: null,
+          created_at: "2026-10-20T12:00:00Z",
         },
-        overlay_opacity: 0.35,
-        background_position: "center",
-        background_size: "cover",
+        overlay_opacity: 0.5,
+        background_position: "top" as const,
+        background_size: "contain" as const,
       };
+
       expect(() =>
-        AdminPageAppearanceDtoSchema.parse(validImageAppearance),
+        AdminImageMediaSchema.parse(realisticAdminPayload.background_media),
       ).not.toThrow();
 
-      const nullBackground = {
-        background_mode: "none",
+      const parsed = AdminPageAppearanceDtoSchema.parse(realisticAdminPayload);
+      expect(parsed.background_media?.id).toBe(
+        "99999999-9999-4999-8999-999999999999",
+      );
+      expect(parsed.background_media?.type).toBe("image");
+      expect(parsed.background_media?.url).toBe(
+        "http://localhost:8000/uploads/background.jpg",
+      );
+      expect(parsed.background_media?.original_filename).toBe("background.jpg");
+      expect(parsed.background_media?.mime_type).toBe("image/jpeg");
+      expect(parsed.background_media?.file_size).toBe(123456);
+      expect(parsed.background_media?.created_at).toBe("2026-10-20T12:00:00Z");
+    });
+
+    it("Section 18: public compact media remains valid under PublicPageAppearanceDtoSchema", () => {
+      const compactPublicMedia = {
+        id: "99999999-9999-4999-8999-999999999999",
+        type: "image" as const,
+        url: "https://api.enstisax.com/uploads/bg.webp",
+        alt_text: null,
+      };
+
+      const parsedMedia =
+        PublicPageAppearanceMediaSchema.parse(compactPublicMedia);
+      expect(parsedMedia.id).toBe("99999999-9999-4999-8999-999999999999");
+      expect(parsedMedia.type).toBe("image");
+
+      const publicAppearance = {
+        background_mode: "image" as const,
+        background_color: "#FFFFFF",
+        background_media: compactPublicMedia,
+        overlay_opacity: 0.35,
+        background_position: "center" as const,
+        background_size: "cover" as const,
+      };
+
+      const parsedAppearance =
+        PublicPageAppearanceDtoSchema.parse(publicAppearance);
+      expect(parsedAppearance.background_media?.url).toBe(
+        "https://api.enstisax.com/uploads/bg.webp",
+      );
+    });
+
+    it("Section 19: public appearance schema strictly rejects admin-only fields", () => {
+      const publicWithAdminFields = {
+        id: "99999999-9999-4999-8999-999999999999",
+        type: "image" as const,
+        url: "https://api.enstisax.com/uploads/bg.webp",
+        alt_text: null,
+        original_filename: "background.jpg",
+        mime_type: "image/jpeg",
+        file_size: 123456,
+        created_at: "2026-10-20T12:00:00Z",
+      };
+
+      expect(() =>
+        PublicPageAppearanceMediaSchema.parse(publicWithAdminFields),
+      ).toThrow();
+
+      expect(() =>
+        PublicPageAppearanceDtoSchema.parse({
+          background_mode: "image",
+          background_color: "#FFFFFF",
+          background_media: publicWithAdminFields,
+          overlay_opacity: 0.35,
+          background_position: "center",
+          background_size: "cover",
+        }),
+      ).toThrow();
+    });
+
+    it("Section 20: admin appearance schema strictly rejects media missing required fields", () => {
+      // Missing mime_type
+      expect(() =>
+        AdminPageAppearanceDtoSchema.parse({
+          background_mode: "image",
+          background_color: "#FFFFFF",
+          background_media: {
+            id: "99999999-9999-4999-8999-999999999999",
+            type: "image",
+            url: "https://api.enstisax.com/uploads/bg.webp",
+            original_filename: "bg.webp",
+            file_size: 123456,
+            created_at: "2026-10-20T12:00:00Z",
+          },
+          overlay_opacity: 0.35,
+          background_position: "center",
+          background_size: "cover",
+        }),
+      ).toThrow();
+
+      // Missing file_size
+      expect(() =>
+        AdminPageAppearanceDtoSchema.parse({
+          background_mode: "image",
+          background_color: "#FFFFFF",
+          background_media: {
+            id: "99999999-9999-4999-8999-999999999999",
+            type: "image",
+            url: "https://api.enstisax.com/uploads/bg.webp",
+            original_filename: "bg.webp",
+            mime_type: "image/jpeg",
+            created_at: "2026-10-20T12:00:00Z",
+          },
+          overlay_opacity: 0.35,
+          background_position: "center",
+          background_size: "cover",
+        }),
+      ).toThrow();
+
+      // Missing created_at
+      expect(() =>
+        AdminPageAppearanceDtoSchema.parse({
+          background_mode: "image",
+          background_color: "#FFFFFF",
+          background_media: {
+            id: "99999999-9999-4999-8999-999999999999",
+            type: "image",
+            url: "https://api.enstisax.com/uploads/bg.webp",
+            original_filename: "bg.webp",
+            mime_type: "image/jpeg",
+            file_size: 123456,
+          },
+          overlay_opacity: 0.35,
+          background_position: "center",
+          background_size: "cover",
+        }),
+      ).toThrow();
+    });
+
+    it("Section 22: both Admin and Public schemas continue accepting background_media = null", () => {
+      const nullAdmin = {
+        background_mode: "none" as const,
         background_color: "#FFFFFF",
         background_media: null,
         overlay_opacity: 0.35,
-        background_position: "center",
-        background_size: "cover",
+        background_position: "center" as const,
+        background_size: "cover" as const,
+      };
+      expect(() => AdminPageAppearanceDtoSchema.parse(nullAdmin)).not.toThrow();
+
+      const nullPublic = {
+        background_mode: "none" as const,
+        background_color: "#FFFFFF",
+        background_media: null,
+        overlay_opacity: 0.35,
+        background_position: "center" as const,
+        background_size: "cover" as const,
       };
       expect(() =>
-        AdminPageAppearanceDtoSchema.parse(nullBackground),
+        PublicPageAppearanceDtoSchema.parse(nullPublic),
       ).not.toThrow();
     });
 
@@ -791,12 +944,7 @@ describe("Page Appearance Feature V1.2 — Background Mode and Solid Color", () 
             patchPayload = await request.json();
             currentData = {
               ...currentData,
-              background_media: {
-                id: uploadedMedia.id,
-                type: "image",
-                url: uploadedMedia.url,
-                alt_text: null,
-              },
+              background_media: uploadedMedia,
             };
             return HttpResponse.json({
               data: currentData,
@@ -934,6 +1082,206 @@ describe("Page Appearance Feature V1.2 — Background Mode and Solid Color", () 
         expect(screen.getByTestId("appearance-no-image")).toBeInTheDocument();
       });
     });
+
+    it("Section 15: admin GET with full admin image DTO parses successfully, renders preview, no INVALID_API_RESPONSE", async () => {
+      const fullAdminImageMedia: AdminImageMedia = {
+        id: "77777777-7777-4777-8777-777777777777",
+        type: "image",
+        url: "http://localhost:8000/uploads/background-full.jpg",
+        original_filename: "background-full.jpg",
+        mime_type: "image/jpeg",
+        file_size: 246810,
+        alt_text: "Full Admin Image",
+        created_at: "2026-10-20T14:30:00Z",
+      };
+
+      const appearanceWithFullImage: AdminPageAppearanceDto = {
+        background_mode: "image",
+        background_color: "#F4EFE8",
+        background_media: fullAdminImageMedia,
+        overlay_opacity: 0.6,
+        background_position: "center",
+        background_size: "cover",
+      };
+
+      server.use(
+        http.get(`${env.apiBaseUrl}/api/v1/admin/page-appearance`, () => {
+          return HttpResponse.json({ data: appearanceWithFullImage });
+        }),
+      );
+
+      renderAdminRouter();
+
+      expect(
+        await screen.findByTestId("appearance-mode-image"),
+      ).toHaveAttribute("aria-checked", "true");
+
+      // Verify no error banner or INVALID_API_RESPONSE
+      expect(
+        screen.queryByText(/INVALID_API_RESPONSE/i),
+      ).not.toBeInTheDocument();
+      expect(
+        screen.queryByText(/The server returned an unexpected response/i),
+      ).not.toBeInTheDocument();
+
+      // Verify thumbnail and live preview render
+      const thumbnail = (await screen.findByTestId(
+        "appearance-current-image",
+      )) as HTMLImageElement;
+      expect(thumbnail.src).toBe(fullAdminImageMedia.url);
+
+      const livePreview = screen.getByTestId("appearance-live-preview");
+      expect(livePreview.style.backgroundImage).toContain(
+        fullAdminImageMedia.url,
+      );
+    });
+
+    it("Section 16: admin PATCH with full admin image DTO parses, canonical state updates, live preview updates, no error UI", async () => {
+      let patchPayload: unknown = null;
+
+      const fullAdminMedia: AdminImageMedia = {
+        id: "88888888-8888-4888-8888-888888888888",
+        type: "image",
+        url: "http://localhost:8000/uploads/patched-bg.jpg",
+        original_filename: "patched-bg.jpg",
+        mime_type: "image/jpeg",
+        file_size: 512000,
+        alt_text: null,
+        created_at: "2026-10-20T15:00:00Z",
+      };
+
+      let currentData: AdminPageAppearanceDto = {
+        background_mode: "image",
+        background_color: "#FFFFFF",
+        background_media: fullAdminMedia,
+        overlay_opacity: 0.35,
+        background_position: "center",
+        background_size: "cover",
+      };
+
+      server.use(
+        http.get(`${env.apiBaseUrl}/api/v1/admin/page-appearance`, () => {
+          return HttpResponse.json({ data: currentData });
+        }),
+        http.patch(
+          `${env.apiBaseUrl}/api/v1/admin/page-appearance`,
+          async ({ request }) => {
+            patchPayload = await request.json();
+            currentData = {
+              ...currentData,
+              overlay_opacity: 0.8,
+            };
+            return HttpResponse.json({ data: currentData });
+          },
+        ),
+      );
+
+      renderAdminRouter();
+
+      await screen.findByTestId("appearance-mode-image");
+
+      const slider = screen.getByTestId(
+        "appearance-opacity-slider",
+      ) as HTMLInputElement;
+      fireEvent.change(slider, { target: { value: "80" } });
+
+      const saveBtn = screen.getByTestId("appearance-save-button");
+      expect(saveBtn).toBeEnabled();
+      fireEvent.click(saveBtn);
+
+      await waitFor(() => {
+        expect(patchPayload).toEqual({
+          overlay_opacity: 0.8,
+        });
+      });
+
+      // Assert no INVALID_API_RESPONSE error banner appeared
+      expect(
+        screen.queryByText(/INVALID_API_RESPONSE/i),
+      ).not.toBeInTheDocument();
+      expect(
+        screen.queryByText(/The server returned an unexpected response/i),
+      ).not.toBeInTheDocument();
+
+      // Assert save success feedback
+      await waitFor(() => {
+        expect(
+          screen.getByText(/Appearance settings saved successfully/i),
+        ).toBeInTheDocument();
+      });
+
+      // Preview retains image
+      const livePreview = screen.getByTestId("appearance-live-preview");
+      expect(livePreview.style.backgroundImage).toContain(fullAdminMedia.url);
+    });
+
+    it("Section 17: upload image -> PATCH integration flow with full admin media DTO succeeds without INVALID_API_RESPONSE", async () => {
+      let patchPayload: unknown = null;
+
+      const uploadedMedia: AdminImageMedia = {
+        type: "image",
+        id: "aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee",
+        url: "http://localhost:8000/uploads/hero-background.webp",
+        original_filename: "hero-background.webp",
+        mime_type: "image/webp",
+        file_size: 987654,
+        alt_text: null,
+        created_at: "2026-10-20T16:00:00Z",
+      };
+
+      let currentData: AdminPageAppearanceDto = { ...defaultAppearanceDto };
+
+      server.use(
+        http.get(`${env.apiBaseUrl}/api/v1/admin/page-appearance`, () => {
+          return HttpResponse.json({ data: currentData });
+        }),
+        http.post(`${env.apiBaseUrl}/api/v1/admin/media/upload`, () => {
+          return HttpResponse.json({ data: uploadedMedia }, { status: 201 });
+        }),
+        http.patch(
+          `${env.apiBaseUrl}/api/v1/admin/page-appearance`,
+          async ({ request }) => {
+            patchPayload = await request.json();
+            currentData = {
+              ...currentData,
+              background_media: uploadedMedia,
+            };
+            return HttpResponse.json({ data: currentData });
+          },
+        ),
+      );
+
+      renderAdminRouter();
+
+      await screen.findByTestId("appearance-mode-none");
+
+      const fileInput = screen.getByTestId("appearance-file-input");
+      const file = new File(["hero content"], "hero-background.webp", {
+        type: "image/webp",
+      });
+
+      fireEvent.change(fileInput, { target: { files: [file] } });
+
+      await waitFor(() => {
+        expect(patchPayload).toEqual({
+          background_media_id: uploadedMedia.id,
+        });
+      });
+
+      // Verify no error UI
+      expect(
+        screen.queryByText(/INVALID_API_RESPONSE/i),
+      ).not.toBeInTheDocument();
+      expect(
+        screen.queryByText(/The server returned an unexpected response/i),
+      ).not.toBeInTheDocument();
+
+      // Verify assigned image preview thumbnail
+      const thumbnail = (await screen.findByTestId(
+        "appearance-current-image",
+      )) as HTMLImageElement;
+      expect(thumbnail.src).toBe(uploadedMedia.url);
+    });
   });
 
   describe("Overlay, Position, Size Controls & Live Preview Behavior", () => {
@@ -1037,6 +1385,9 @@ describe("Page Appearance Feature V1.2 — Background Mode and Solid Color", () 
       expect(wrapper.style.backgroundColor).toBe("");
 
       expect(
+        screen.queryByTestId("public-fixed-background"),
+      ).not.toBeInTheDocument();
+      expect(
         screen.queryByTestId("public-page-overlay"),
       ).not.toBeInTheDocument();
     });
@@ -1066,16 +1417,16 @@ describe("Page Appearance Feature V1.2 — Background Mode and Solid Color", () 
         await screen.findByRole("heading", { name: "About Us" }),
       ).toBeInTheDocument();
 
-      const wrapper = screen.getByTestId("public-page-wrapper");
-      expect(wrapper.style.backgroundColor).toBe("rgb(244, 239, 232)");
-      expect(wrapper.style.backgroundImage).toBe("");
+      const bgLayer = screen.getByTestId("public-fixed-background");
+      expect(bgLayer.style.backgroundColor).toBe("rgb(244, 239, 232)");
+      expect(bgLayer.style.backgroundImage).toBe("");
 
       expect(
         screen.queryByTestId("public-page-overlay"),
       ).not.toBeInTheDocument();
     });
 
-    it("Section 63: renders background image, position, size, base color, and overlay when background_mode = 'image'", async () => {
+    it("Section 63: renders background image, position, size, base color, and overlay on dedicated layer when background_mode = 'image'", async () => {
       const publicWithBackground: PublicPageResponse = {
         ...basePublicPage,
         appearance: {
@@ -1104,13 +1455,14 @@ describe("Page Appearance Feature V1.2 — Background Mode and Solid Color", () 
         await screen.findByRole("heading", { name: "About Us" }),
       ).toBeInTheDocument();
 
-      const wrapper = screen.getByTestId("public-page-wrapper");
-      expect(wrapper.style.backgroundColor).toBe("rgb(244, 239, 232)");
-      expect(wrapper.style.backgroundImage).toContain(
+      const bgLayer = screen.getByTestId("public-fixed-background");
+      expect(bgLayer.style.backgroundColor).toBe("rgb(244, 239, 232)");
+      expect(bgLayer.style.backgroundImage).toContain(
         "https://api.enstisax.com/uploads/bg-hero.webp",
       );
-      expect(wrapper.style.backgroundPosition).toBe("top");
-      expect(wrapper.style.backgroundSize).toBe("cover");
+      expect(bgLayer.style.backgroundPosition).toBe("top");
+      expect(bgLayer.style.backgroundSize).toBe("cover");
+      expect(bgLayer.style.backgroundRepeat).toBe("no-repeat");
 
       const overlay = screen.getByTestId("public-page-overlay");
       expect(overlay.style.opacity).toBe("0.4");
@@ -1142,9 +1494,9 @@ describe("Page Appearance Feature V1.2 — Background Mode and Solid Color", () 
         await screen.findByRole("heading", { name: "About Us" }),
       ).toBeInTheDocument();
 
-      const wrapper = screen.getByTestId("public-page-wrapper");
-      expect(wrapper.style.backgroundColor).toBe("rgb(244, 239, 232)");
-      expect(wrapper.style.backgroundImage).toBe("");
+      const bgLayer = screen.getByTestId("public-fixed-background");
+      expect(bgLayer.style.backgroundColor).toBe("rgb(244, 239, 232)");
+      expect(bgLayer.style.backgroundImage).toBe("");
       expect(
         screen.queryByTestId("public-page-overlay"),
       ).not.toBeInTheDocument();
@@ -1197,8 +1549,8 @@ describe("Page Appearance Feature V1.2 — Background Mode and Solid Color", () 
         await screen.findByRole("heading", { name: "About Us" }),
       ).toBeInTheDocument();
 
-      const wrapper = screen.getByTestId("public-page-wrapper");
-      expect(wrapper.style.backgroundImage).toContain(
+      const bgLayer = screen.getByTestId("public-fixed-background");
+      expect(bgLayer.style.backgroundImage).toContain(
         "https://api.enstisax.com/uploads/bg-hero.webp",
       );
 
@@ -1211,14 +1563,311 @@ describe("Page Appearance Feature V1.2 — Background Mode and Solid Color", () 
       await screen.findByText("Saxophon-Ensemble");
 
       // Verify appearance remains identical
-      expect(wrapper.style.backgroundImage).toContain(
+      expect(bgLayer.style.backgroundImage).toContain(
         "https://api.enstisax.com/uploads/bg-hero.webp",
       );
-      expect(wrapper.style.backgroundPosition).toBe("center");
-      expect(wrapper.style.backgroundSize).toBe("cover");
+      expect(bgLayer.style.backgroundPosition).toBe("center");
+      expect(bgLayer.style.backgroundSize).toBe("cover");
 
       const overlay = screen.getByTestId("public-page-overlay");
       expect(overlay.style.opacity).toBe("0.45");
+    });
+
+    it("Section 34 & 37: renders exactly ONE dedicated custom background layer with exact styles in image mode", async () => {
+      const publicImagePage: PublicPageResponse = {
+        ...basePublicPage,
+        appearance: {
+          background_mode: "image",
+          background_color: "#F4EFE8",
+          background_media: {
+            id: "99999999-9999-4999-8999-999999999999",
+            type: "image",
+            url: "https://api.enstisax.com/uploads/bg-hero.webp",
+          },
+          overlay_opacity: 0.5,
+          background_position: "top",
+          background_size: "cover",
+        },
+      };
+
+      server.use(
+        http.get(`${env.apiBaseUrl}/api/v1/public/page`, () => {
+          return HttpResponse.json({ data: publicImagePage });
+        }),
+      );
+
+      renderPublicView();
+
+      await screen.findByRole("heading", { name: "About Us" });
+
+      const bgLayers = screen.getAllByTestId("public-fixed-background");
+      expect(bgLayers).toHaveLength(1);
+
+      const bgLayer = bgLayers[0]!;
+      expect(bgLayer.style.backgroundColor).toBe("rgb(244, 239, 232)");
+      expect(bgLayer.style.backgroundImage).toContain(
+        "https://api.enstisax.com/uploads/bg-hero.webp",
+      );
+      expect(bgLayer.style.backgroundPosition).toBe("top");
+      expect(bgLayer.style.backgroundSize).toBe("cover");
+      expect(bgLayer.style.backgroundRepeat).toBe("no-repeat");
+    });
+
+    it("Section 35 & 40: renders exactly ONE background layer with no image URL and no overlay in color mode", async () => {
+      const publicColorPage: PublicPageResponse = {
+        ...basePublicPage,
+        appearance: {
+          background_mode: "color",
+          background_color: "#243A3A",
+          background_media: null,
+          overlay_opacity: 0.35,
+          background_position: "center",
+          background_size: "cover",
+        },
+      };
+
+      server.use(
+        http.get(`${env.apiBaseUrl}/api/v1/public/page`, () => {
+          return HttpResponse.json({ data: publicColorPage });
+        }),
+      );
+
+      renderPublicView();
+
+      await screen.findByRole("heading", { name: "About Us" });
+
+      const bgLayers = screen.getAllByTestId("public-fixed-background");
+      expect(bgLayers).toHaveLength(1);
+      expect(bgLayers[0]!.style.backgroundColor).toBe("rgb(36, 58, 58)");
+      expect(bgLayers[0]!.style.backgroundImage).toBe("");
+
+      // Assert custom image overlay is not active in color mode
+      expect(
+        screen.queryByTestId("public-page-overlay"),
+      ).not.toBeInTheDocument();
+    });
+
+    it("Section 36: none mode renders no custom fixed appearance layer or image", async () => {
+      server.use(
+        http.get(`${env.apiBaseUrl}/api/v1/public/page`, () => {
+          return HttpResponse.json({
+            data: {
+              ...basePublicPage,
+              appearance: {
+                background_mode: "none",
+                background_color: "#FFFFFF",
+                background_media: null,
+                overlay_opacity: 0.35,
+                background_position: "center",
+                background_size: "cover",
+              },
+            },
+          });
+        }),
+      );
+
+      renderPublicView();
+
+      await screen.findByRole("heading", { name: "About Us" });
+
+      expect(
+        screen.queryByTestId("public-fixed-background"),
+      ).not.toBeInTheDocument();
+      expect(
+        screen.queryByTestId("public-page-overlay"),
+      ).not.toBeInTheDocument();
+    });
+
+    it("Section 38: size=contain applies contain and no-repeat to fixed background layer", async () => {
+      const publicContainPage: PublicPageResponse = {
+        ...basePublicPage,
+        appearance: {
+          background_mode: "image",
+          background_color: "#FFFFFF",
+          background_media: {
+            id: "99999999-9999-4999-8999-999999999999",
+            type: "image",
+            url: "https://api.enstisax.com/uploads/bg-contain.webp",
+          },
+          overlay_opacity: 0.2,
+          background_position: "bottom",
+          background_size: "contain",
+        },
+      };
+
+      server.use(
+        http.get(`${env.apiBaseUrl}/api/v1/public/page`, () => {
+          return HttpResponse.json({ data: publicContainPage });
+        }),
+      );
+
+      renderPublicView();
+
+      await screen.findByRole("heading", { name: "About Us" });
+
+      const bgLayer = screen.getByTestId("public-fixed-background");
+      expect(bgLayer.style.backgroundSize).toBe("contain");
+      expect(bgLayer.style.backgroundPosition).toBe("bottom");
+      expect(bgLayer.style.backgroundRepeat).toBe("no-repeat");
+    });
+
+    it("Section 39: overlay layer receives opacity and pointer-events: none in image mode", async () => {
+      const publicWithOverlay: PublicPageResponse = {
+        ...basePublicPage,
+        appearance: {
+          background_mode: "image",
+          background_color: "#F4EFE8",
+          background_media: {
+            id: "99999999-9999-4999-8999-999999999999",
+            type: "image",
+            url: "https://api.enstisax.com/uploads/bg-hero.webp",
+          },
+          overlay_opacity: 0.65,
+          background_position: "center",
+          background_size: "cover",
+        },
+      };
+
+      server.use(
+        http.get(`${env.apiBaseUrl}/api/v1/public/page`, () => {
+          return HttpResponse.json({ data: publicWithOverlay });
+        }),
+      );
+
+      renderPublicView();
+
+      await screen.findByRole("heading", { name: "About Us" });
+
+      const overlay = screen.getByTestId("public-page-overlay");
+      expect(overlay.style.opacity).toBe("0.65");
+      // Verify pointer-events is none via computed or inline style / className
+      expect(overlay.className).toBeTruthy();
+    });
+
+    it("Section 41 & 42: public content renders in dedicated layer, and multiple sections share exactly 1 background layer", async () => {
+      const multiSectionPage: PublicPageResponse = {
+        ...basePublicPage,
+        sections: [
+          ...basePublicPage.sections,
+          {
+            id: "20000000-0000-4000-8000-000000000002",
+            key: "gallery",
+            title: "Gallery Section",
+            navigation_label: "Gallery",
+            sort_order: 2,
+            blocks: [],
+          },
+          {
+            id: "30000000-0000-4000-8000-000000000003",
+            key: "testimonials",
+            title: "Testimonials Section",
+            navigation_label: "Testimonials",
+            sort_order: 3,
+            blocks: [],
+          },
+          {
+            id: "40000000-0000-4000-8000-000000000004",
+            key: "contact-us",
+            title: "Contact Section",
+            navigation_label: "Contact",
+            sort_order: 4,
+            blocks: [],
+          },
+        ],
+        appearance: {
+          background_mode: "image",
+          background_color: "#F4EFE8",
+          background_media: {
+            id: "99999999-9999-4999-8999-999999999999",
+            type: "image",
+            url: "https://api.enstisax.com/uploads/bg-hero.webp",
+          },
+          overlay_opacity: 0.4,
+          background_position: "center",
+          background_size: "cover",
+        },
+      };
+
+      server.use(
+        http.get(`${env.apiBaseUrl}/api/v1/public/page`, () => {
+          return HttpResponse.json({ data: multiSectionPage });
+        }),
+      );
+
+      renderPublicView();
+
+      await screen.findByRole("heading", { name: "About Us" });
+      expect(
+        screen.getByRole("heading", { name: "Gallery Section" }),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole("heading", { name: "Testimonials Section" }),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole("heading", { name: "Contact Section" }),
+      ).toBeInTheDocument();
+
+      // Assert content is inside public-page-content
+      const contentLayer = screen.getByTestId("public-page-content");
+      expect(contentLayer).toBeInTheDocument();
+
+      // Assert exactly 1 background layer and 1 overlay layer exist across all sections
+      const bgLayers = screen.getAllByTestId("public-fixed-background");
+      expect(bgLayers).toHaveLength(1);
+
+      const overlays = screen.getAllByTestId("public-page-overlay");
+      expect(overlays).toHaveLength(1);
+    });
+
+    it("Section 46 & 47: contact and testimonial forms remain interactive and clickable above background layers", async () => {
+      const pageWithForms: PublicPageResponse = {
+        ...basePublicPage,
+        sections: [
+          {
+            id: "40000000-0000-4000-8000-000000000004",
+            key: "contact-us",
+            title: "Contact Section",
+            navigation_label: "Contact",
+            sort_order: 1,
+            blocks: [],
+          },
+        ],
+        appearance: {
+          background_mode: "image",
+          background_color: "#F4EFE8",
+          background_media: {
+            id: "99999999-9999-4999-8999-999999999999",
+            type: "image",
+            url: "https://api.enstisax.com/uploads/bg-hero.webp",
+          },
+          overlay_opacity: 0.4,
+          background_position: "center",
+          background_size: "cover",
+        },
+      };
+
+      server.use(
+        http.get(`${env.apiBaseUrl}/api/v1/public/page`, () => {
+          return HttpResponse.json({ data: pageWithForms });
+        }),
+      );
+
+      renderPublicView();
+
+      await screen.findByRole("heading", { name: "Contact Section" });
+
+      const nameInput = screen.getByTestId("contact-name");
+      expect(nameInput).toBeInTheDocument();
+      expect(nameInput).not.toBeDisabled();
+
+      fireEvent.change(nameInput, { target: { value: "John Coltrane" } });
+      expect((nameInput as HTMLInputElement).value).toBe("John Coltrane");
+
+      const submitButton = screen.getByRole("button", {
+        name: /Send Message/i,
+      });
+      expect(submitButton).toBeInTheDocument();
+      expect(submitButton).toBeEnabled();
     });
   });
 

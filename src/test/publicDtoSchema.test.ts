@@ -228,6 +228,35 @@ describe("Public DTO Schema Validation", () => {
     ).toBe(false);
   });
 
+  it("fails parsing cleanly when background_media contains admin-only fields", () => {
+    const adminFieldsInPublicResponse = {
+      data: {
+        ...validPublicPageResponse.data,
+        appearance: {
+          background_mode: "image" as const,
+          background_color: "#FFFFFF",
+          background_media: {
+            id: "11111111-1111-4111-8111-111111111111",
+            type: "image" as const,
+            url: "https://api.enstisax.com/uploads/bg.webp",
+            alt_text: null,
+            original_filename: "bg.webp",
+            mime_type: "image/webp",
+            file_size: 123456,
+            created_at: "2026-10-20T12:00:00Z",
+          },
+          overlay_opacity: 0.35,
+          background_position: "center" as const,
+          background_size: "cover" as const,
+        },
+      },
+    };
+
+    expect(
+      PublicPageEnvelopeSchema.safeParse(adminFieldsInPublicResponse).success,
+    ).toBe(false);
+  });
+
   it("Section 45: validates canonical BackgroundColor and rejects invalid hex strings", () => {
     // Valid canonical #RRGGBB
     for (const validColor of ["#FFFFFF", "#F4EFE8", "#000000"]) {
