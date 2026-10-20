@@ -267,22 +267,38 @@ react-spa-sax/
   - Removing background in `image` mode atomically switches mode to `none` and clears `background_media_id`. In `color` or `none` modes, only `background_media_id` is cleared while preserving mode and color.
   - Partial PATCH: Only modified fields are sent when updating mode, color, overlay opacity, position, or size.
   - Live Preview: Real-time visual preview reacting dynamically to mode, color, slider, and option adjustments before saving.
-- **Public SPA Rendering Behavior**:
-  - When `background_mode` is `color`: Applies `background-color` to the page root without overlay.
-  - When `background_mode` is `image`: Applies `background-color` as base/fallback, `background-image`, `background-position`, `background-size`, and renders overlay (`var(--color-public-bg)` with dynamic opacity).
-  - When `background_mode` is `none`: Falls back gracefully to the default editorial background without broken styles or overlay.
+- **Public SPA Rendering Behavior (Fixed Single Background Layer)**:
+  - Architecture: Dedicated viewport layer separation (`PublicPageRoot` → `FixedBackgroundLayer` → `FixedOverlayLayer` → `PageContent`).
+  - Viewport Stability: The background and overlay layers occupy the viewport (`position: fixed; inset: 0; pointer-events: none`) without relying on `background-attachment: fixed` (avoiding mobile Safari glitches). Content scrolls independently across arbitrary heights without image repetition or restarts.
+  - When `background_mode` is `color`: Renders a single dedicated fixed background layer with `background-color`. No image URL, no overlay layer.
+  - When `background_mode` is `image`: Renders a single dedicated fixed background layer with `background-color` (fallback base), `background-image`, `background-position`, `background-size`, and `background-repeat: no-repeat`. Renders a dedicated fixed overlay layer (`var(--color-public-bg)`) with dynamic opacity.
+  - When `background_mode` is `none`: No custom fixed background or overlay layer is mounted; falls back gracefully to the default editorial background.
   - Language-Independent: Appearance settings are shared across all locales (`en`, `de`). Switching languages does not reset or refetch appearance settings.
 - **Appearance Media Contract**:
-  - The appearance media DTO strictly enforces the backend discriminator:
-    ```json
-    {
-      "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-      "type": "image",
-      "url": "https://api.enstisax.com/uploads/...",
-      "alt_text": null
-    }
-    ```
-  - Both public and admin appearance schemas strictly require `type: "image"`. Discriminator-less payloads, non-image types (`video`, `youtube`), and legacy `media_type` shapes are rejected at the frontend schema level.
+  - The frontend models two distinct, strict contracts for appearance media:
+    - **Admin appearance**: Returns the full admin image DTO (`AdminImageMediaDto`):
+      ```json
+      {
+        "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+        "type": "image",
+        "url": "https://api.enstisax.com/uploads/...",
+        "original_filename": "background.jpg",
+        "mime_type": "image/jpeg",
+        "file_size": 123456,
+        "alt_text": null,
+        "created_at": "2026-10-20T12:00:00Z"
+      }
+      ```
+    - **Public appearance**: Returns the compact public image DTO (`PublicPageAppearanceMediaDto`):
+      ```json
+      {
+        "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+        "type": "image",
+        "url": "https://api.enstisax.com/uploads/...",
+        "alt_text": null
+      }
+      ```
+  - Both public and admin appearance schemas strictly require `type: "image"`. Discriminator-less payloads, non-image types (`video`, `youtube`), and legacy `media_type` shapes are rejected at the frontend schema level. Public appearance strictly rejects admin-only fields.
 
 ### Production Upload Persistence Note
 

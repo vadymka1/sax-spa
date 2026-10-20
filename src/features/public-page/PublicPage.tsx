@@ -57,15 +57,27 @@ const PublicPageInner: React.FC = () => {
   const appearance = data.appearance;
   const mode = appearance?.background_mode ?? "none";
 
-  const backgroundStyle: React.CSSProperties = {};
+  let showBackground = false;
   let showOverlay = false;
+  const backgroundStyle: React.CSSProperties = {};
 
   if (mode === "color") {
+    showBackground = true;
     backgroundStyle.backgroundColor = appearance.background_color;
   } else if (mode === "image") {
+    showBackground = true;
     backgroundStyle.backgroundColor = appearance.background_color;
-    if (appearance.background_media) {
-      backgroundStyle.backgroundImage = `url(${appearance.background_media.url})`;
+    // Section 29: compatible with background_media.url or a future background_optimized.url
+    const mediaUrl =
+      "background_optimized" in appearance &&
+      appearance.background_optimized &&
+      typeof (appearance.background_optimized as { url?: string }).url ===
+        "string"
+        ? (appearance.background_optimized as { url: string }).url
+        : appearance.background_media?.url;
+
+    if (mediaUrl) {
+      backgroundStyle.backgroundImage = `url(${mediaUrl})`;
       backgroundStyle.backgroundPosition = appearance.background_position;
       backgroundStyle.backgroundSize = appearance.background_size;
       backgroundStyle.backgroundRepeat = "no-repeat";
@@ -74,49 +86,55 @@ const PublicPageInner: React.FC = () => {
   }
 
   return (
-    <div
-      className={styles.pageWrapper}
-      style={backgroundStyle}
-      data-testid="public-page-wrapper"
-    >
+    <div className={styles.pageWrapper} data-testid="public-page-wrapper">
+      {showBackground && (
+        <div
+          className={styles.fixedBackgroundLayer}
+          style={backgroundStyle}
+          aria-hidden="true"
+          data-testid="public-fixed-background"
+        />
+      )}
       {showOverlay && (
         <div
-          className={styles.pageOverlay}
+          className={styles.fixedOverlayLayer}
           style={{ opacity: appearance.overlay_opacity }}
           aria-hidden="true"
           data-testid="public-page-overlay"
         />
       )}
 
-      <PublicHeader
-        siteTitle={data.page.title}
-        sections={sortedSections}
-        activeSectionKey={activeSectionKey}
-      />
+      <div className={styles.pageContent} data-testid="public-page-content">
+        <PublicHeader
+          siteTitle={data.page.title}
+          sections={sortedSections}
+          activeSectionKey={activeSectionKey}
+        />
 
-      <main id="top" className={styles.mainContent}>
-        {sortedSections.length > 0 ? (
-          sortedSections.map((section) => (
-            <PublicSection
-              key={section.id}
-              section={section}
-              testimonials={data.testimonials}
-            />
-          ))
-        ) : (
-          <div className={styles.emptyPageState}>
-            <h2>{t(locale, "common", "noContentTitle")}</h2>
-            <p>{t(locale, "common", "noContentBody")}</p>
-          </div>
-        )}
-      </main>
+        <main id="top" className={styles.mainContent}>
+          {sortedSections.length > 0 ? (
+            sortedSections.map((section) => (
+              <PublicSection
+                key={section.id}
+                section={section}
+                testimonials={data.testimonials}
+              />
+            ))
+          ) : (
+            <div className={styles.emptyPageState}>
+              <h2>{t(locale, "common", "noContentTitle")}</h2>
+              <p>{t(locale, "common", "noContentBody")}</p>
+            </div>
+          )}
+        </main>
 
-      <footer className={styles.footer}>
-        <p>
-          &copy; {new Date().getFullYear()} {data.page.title}.{" "}
-          {t(locale, "common", "allRightsReserved")}
-        </p>
-      </footer>
+        <footer className={styles.footer}>
+          <p>
+            &copy; {new Date().getFullYear()} {data.page.title}.{" "}
+            {t(locale, "common", "allRightsReserved")}
+          </p>
+        </footer>
+      </div>
     </div>
   );
 };

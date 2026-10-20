@@ -127,7 +127,7 @@ export const BackgroundColorSchema = z
   .regex(/^#[0-9A-F]{6}$/, "Must be canonical hex color #RRGGBB");
 export type BackgroundColor = z.infer<typeof BackgroundColorSchema>;
 
-export const PageAppearanceMediaSchema = z
+export const PublicPageAppearanceMediaSchema = z
   .object({
     id: z.string().uuid(),
     type: z.literal("image"),
@@ -135,16 +135,24 @@ export const PageAppearanceMediaSchema = z
     alt_text: z.string().nullable().optional(),
   })
   .strict();
-export type PageAppearanceMedia = z.infer<typeof PageAppearanceMediaSchema>;
+export type PublicPageAppearanceMedia = z.infer<
+  typeof PublicPageAppearanceMediaSchema
+>;
 
-export const PublicPageAppearanceDtoSchema = z.object({
-  background_mode: BackgroundModeSchema,
-  background_color: BackgroundColorSchema,
-  background_media: PageAppearanceMediaSchema.nullable(),
-  overlay_opacity: z.number().min(0).max(1),
-  background_position: BackgroundPositionSchema,
-  background_size: BackgroundSizeSchema,
-});
+// Backwards-compatible alias for existing imports
+export const PageAppearanceMediaSchema = PublicPageAppearanceMediaSchema;
+export type PageAppearanceMedia = PublicPageAppearanceMedia;
+
+export const PublicPageAppearanceDtoSchema = z
+  .object({
+    background_mode: BackgroundModeSchema,
+    background_color: BackgroundColorSchema,
+    background_media: PublicPageAppearanceMediaSchema.nullable(),
+    overlay_opacity: z.number().min(0).max(1),
+    background_position: BackgroundPositionSchema,
+    background_size: BackgroundSizeSchema,
+  })
+  .strict();
 export type PublicPageAppearanceDto = z.infer<
   typeof PublicPageAppearanceDtoSchema
 >;
@@ -462,16 +470,18 @@ export type ReorderContentBlocksRequest = z.infer<
 >;
 
 // Admin Media DTO Schemas & Types
-export const AdminImageMediaSchema = z.object({
-  type: z.literal("image"),
-  id: z.string().uuid(),
-  url: z.string(),
-  original_filename: z.string().nullable().optional(),
-  mime_type: z.string(),
-  file_size: z.number().int(),
-  alt_text: z.string().nullable().optional(),
-  created_at: z.string(),
-});
+export const AdminImageMediaSchema = z
+  .object({
+    type: z.literal("image"),
+    id: z.string().uuid(),
+    url: z.string(),
+    original_filename: z.string().nullable().optional(),
+    mime_type: z.string(),
+    file_size: z.number().int(),
+    alt_text: z.string().nullable().optional(),
+    created_at: z.string(),
+  })
+  .strict();
 export type AdminImageMedia = z.infer<typeof AdminImageMediaSchema>;
 
 export const AdminVideoMediaSchema = z.object({
@@ -695,14 +705,16 @@ export type ReorderTestimonialsRequest = z.infer<
 export type PublicMediaDto = PublicMedia;
 
 // Admin Page Appearance DTO Schemas & Types
-export const AdminPageAppearanceDtoSchema = z.object({
-  background_mode: BackgroundModeSchema,
-  background_color: BackgroundColorSchema,
-  background_media: PageAppearanceMediaSchema.nullable(),
-  overlay_opacity: z.number().min(0).max(1),
-  background_position: BackgroundPositionSchema,
-  background_size: BackgroundSizeSchema,
-});
+export const AdminPageAppearanceDtoSchema = z
+  .object({
+    background_mode: BackgroundModeSchema,
+    background_color: BackgroundColorSchema,
+    background_media: AdminImageMediaSchema.nullable(),
+    overlay_opacity: z.number().min(0).max(1),
+    background_position: BackgroundPositionSchema,
+    background_size: BackgroundSizeSchema,
+  })
+  .strict();
 export type AdminPageAppearanceDto = z.infer<
   typeof AdminPageAppearanceDtoSchema
 >;

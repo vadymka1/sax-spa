@@ -473,8 +473,8 @@ describe("FRONTEND MOBILE RESPONSIVENESS V1 — AUDIT SUITE", () => {
 
     await screen.findByText("SPA Saxophone Ensemble Mobile Audit");
 
-    const pageWrapper = screen.getByTestId("public-page-wrapper");
-    expect(pageWrapper).toHaveStyle({
+    const bgLayer = screen.getByTestId("public-fixed-background");
+    expect(bgLayer).toHaveStyle({
       backgroundImage: "url(https://example.test/hero-bg.jpg)",
       backgroundPosition: "center",
       backgroundSize: "cover",
